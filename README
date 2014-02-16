@@ -1,0 +1,7 @@
+
+
+Linux
+-----
+
+run GYP_GENERATORS=ninja gyp --depth . && ninja -C out/Debug
+
