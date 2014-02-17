@@ -21,6 +21,7 @@ public:
 private:
   int vp_width;
   int vp_height;
+  GLFWwindow *window;
 };
 
 #endif /*__GAME_GAME_H__*/

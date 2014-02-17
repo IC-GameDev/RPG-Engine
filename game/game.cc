@@ -2,37 +2,53 @@
 // Licensing information can be found in the LICENSE file
 // (C) 2014 :(){ :|:& };:. All rights reserved.
 
-#include <exception>
-#include <iostream>
-#include <SDL2/SDL.h>
 #include "engine/common.h"
-#include "game/game.h"
+#include "game/common.h"
 
 // -----------------------------------------------------------------------------
 Game::Game()
   : vp_width(800),
-    vp_height(600)
+    vp_height(600),
+    window(NULL)
 {
 }
 
 // -----------------------------------------------------------------------------
 void Game::Init()
 {
-  if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
-  {
-    EXCEPT << "Cannot init SDL: " << SDL_GetError();
-  }
+  if (glfwInit() != GL_TRUE)
+    EXCEPT << "Cannot initialise GLFW";
+
+  if (!(window = glfwCreateWindow(vp_width, vp_height, "Game", NULL, NULL)))
+    EXCEPT << "Cannot create GLFW Window";
+
+  glfwMakeContextCurrent(window);
+  if (glewInit() != GLEW_OK)
+    EXCEPT << "Cannot initialise GLEW";
 }
 
 // -----------------------------------------------------------------------------
 void Game::Run()
 {
+  while (!glfwWindowShouldClose(window))
+  {
+    glfwGetWindowSize(window, &vp_width, &vp_height);
+    
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+  }
 }
 
 // -----------------------------------------------------------------------------
 void Game::Destroy()
 {
-  SDL_Quit();
+  if (window != NULL)
+  {
+    glfwDestroyWindow(window);
+    window = NULL;
+  }
+
+  glfwTerminate();
 }
 
 // -----------------------------------------------------------------------------

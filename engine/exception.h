@@ -15,7 +15,7 @@
 class Exception : public std::exception
 {
 public:
-  /**
+  /*
    * Creates a new exception without a message
    */
   Exception();
@@ -59,6 +59,10 @@ private:
   std::string msg;
 };
 
-#define EXCEPT throw Exception(__FILE__, __FUNCTION__, __LINE__)
+#if defined(__clang__)
+# define EXCEPT throw Exception(__FILE__, __FUNCTION__, __LINE__)
+#else
+# define EXCEPT throw Exception()
+#endif
 
 #endif /*__ENGINE_EXCEPTION_H__*/

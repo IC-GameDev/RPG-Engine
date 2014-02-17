@@ -82,8 +82,15 @@
       ],
       'sources':
       [
+        'engine/building.cc',
+        'engine/camera.cc',
+        'engine/engine.cc',
+        'engine/entity.cc',
         'engine/exception.cc',
-        'engine/engine.cc'
+        'engine/level.cc',
+        'engine/lua.cc',
+        'engine/object.cc',
+        'engine/world.cc'
       ],   
       'conditions': 
       [
@@ -92,7 +99,9 @@
           {
             'libraries':
             [
-              '-lSDL2'
+              '-lGLEW',
+              '-llua',
+              '-lpng'
             ]
           }
         ]
@@ -114,7 +123,9 @@
       ],
       'sources':
       [
-        'game/game.cc'
+        'game/game.cc',
+        'game/overworld.cc',
+        'game/underworld.cc'
       ],    
       'conditions': 
       [
@@ -123,7 +134,8 @@
           {
             'libraries':
             [
-              '-lSDL2'
+              '-lglfw',
+              '-lGLEW'
             ]
           }
         ]
