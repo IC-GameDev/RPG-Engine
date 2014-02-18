@@ -68,7 +68,7 @@ int main(int argc, char **argv)
   }
   catch (std::exception& e)
   {
-    if (game == NULL)
+    if (game != NULL)
     {
       delete game;
       game = NULL;
