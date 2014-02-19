@@ -6,7 +6,11 @@
 
 class Camera
 {
+public:
+  Camera();
 
+private:
+  
 };
 
 #endif /*__ENGINE_CAMERA_H__*/

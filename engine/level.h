@@ -60,95 +60,8 @@ private:
   Level *level;
   /// Chunk position
   glm::ivec2 pos;
-
   /// Level needs access to chunk data
   friend class Level;
-};
-
-/**
- * Quad tree used to store and select chunks
- * It also allows the removal of unneeded chunks
- * Iterative stackless traversal is used to perform all 
- * the operation in O(1) memory
- */
-class ChunkTree
-{
-public:
-  /**
-   * Creates a new quad tree
-   */
-  ChunkTree();
-
-  /**
-   * Destroyes the tree
-   */
-  ~ChunkTree();
-
-  /**
-   * Inserts a new chunk into the store
-   */
-  void Insert(Chunk *chunk);
-
-  /**
-   * Removes all chunks that are outside a given area
-   * @param min Bottom-left corner of the AABB
-   * @param max Top-right corner of the AABB
-   */
-  void Prune(glm::ivec2 min, glm::ivec2 max);
-
-private:
-  /**
-   * Quad tree node
-   */
-  struct Node
-  {
-    /**
-     * Sets internal pointers to null
-     */
-    Node()
-      : chunk(NULL)
-      , parent(NULL)
-      , index(0)
-    {
-      memset(children, 0, sizeof(children));
-    }
-
-    /**
-     * Deletes all the children
-     */
-    ~Node()
-    {
-      if (chunk)
-      {
-        delete chunk;
-        chunk = NULL;
-      }
-
-      for (size_t i = 0; i < 4; ++i)
-      {
-        if (children[i])
-        {
-          delete children[i];
-          children[i] = NULL;
-        }
-      }
-    }
-
-    /// Index of a chunk or NULL
-    Chunk *chunk;
-
-    /// Link to the parent
-    Node *parent;
-
-    /// Link to children
-    Node *children[4];
-
-    /// Child index
-    unsigned index;
-  };
-
-  /// Root node of the quad tree
-  Node *root;
 };
 
 /**
@@ -191,8 +104,6 @@ private:
   std::string name;
   /// Cache file path
   std::string path;
-  /// Quad tree for the chunks
-  ChunkTree tree;
 };
 
 #endif /*__ENGINE_LEVEL_H__*/

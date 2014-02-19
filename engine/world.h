@@ -4,8 +4,23 @@
 #ifndef __ENGINE_WORLD_H__
 #define __ENGINE_WORLD_H__
 
-class World : public Entity
+class World
 {
+public:
+  /**
+   * Creates a new empty world
+   */
+  World();
+
+  /**
+   * Destroys the world
+   */
+  ~World();
+
+  /**
+   * Initialises the world
+   */
+  void Init();
 };
 
 #endif /*__ENGINE_WORLD_H__*/

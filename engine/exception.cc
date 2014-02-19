@@ -33,6 +33,13 @@ Exception& Exception::operator << (const char * str)
 }
 
 // -----------------------------------------------------------------------------
+Exception& Exception::operator << (const std::string& str)
+{
+  msg.append(str);
+  return *this;
+}
+
+// -----------------------------------------------------------------------------
 Exception& Exception::operator << (int i)
 {
   std::stringstream ss;

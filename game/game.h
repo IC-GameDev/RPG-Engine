@@ -11,17 +11,35 @@
 class Game
 {
 public:
+  /**
+   * Creates a new game object, initialising GLFW
+   */
   Game();
-  virtual ~Game() { Destroy(); }
 
+  /**
+   * Destroys allocated resources, terminating GLFW
+   */
+  ~Game();
+
+  /**
+   * Initialises the game, loading resources
+   */
   void Init();
+
+  /**
+   * Main loop
+   */
   void Run();
-  void Destroy();
 
 private:
-  int vp_width;
-  int vp_height;
+  /// Size of the viewport
+  glm::ivec2 viewport;
+  /// Reference to the GLFW window
   GLFWwindow *window;
+  /// Rendering subsystem
+  Renderer *renderer;
+  /// Game world
+  World *world;
 };
 
 #endif /*__GAME_GAME_H__*/

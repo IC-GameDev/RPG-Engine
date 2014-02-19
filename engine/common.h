@@ -26,7 +26,11 @@
 # include <glm/ext.hpp>
 // Engine
 # include "engine/exception.h"
+# include "engine/hashmap.h"
+# include "engine/quadtree.h"
 # include "engine/lua.h"
+# include "engine/shader.h"
+# include "engine/renderer.h"
 # include "engine/camera.h"
 # include "engine/entity.h"
 # include "engine/object.h"

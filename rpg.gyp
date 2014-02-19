@@ -31,7 +31,6 @@
               'cflags': [
                 '-g',
                 '-O0',
-                '-Wall',
                 '-fPIC',
                 '-std=c++03',
                 '-march=nocona'
@@ -84,12 +83,15 @@
       [
         'engine/building.cc',
         'engine/camera.cc',
+        'engine/character.cc',
         'engine/engine.cc',
         'engine/entity.cc',
         'engine/exception.cc',
         'engine/level.cc',
         'engine/lua.cc',
         'engine/object.cc',
+        'engine/renderer.cc',
+        'engine/shader.cc',
         'engine/world.cc'
       ],   
       'conditions': 

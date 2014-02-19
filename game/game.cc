@@ -1,47 +1,33 @@
 // This file is part of the :(){ :|:& };:'s project
 // Licensing information can be found in the LICENSE file
 // (C) 2014 :(){ :|:& };:. All rights reserved.
-
 #include "engine/common.h"
 #include "game/common.h"
 
 // -----------------------------------------------------------------------------
 Game::Game()
-  : vp_width(800),
-    vp_height(600),
-    window(NULL)
+  : viewport(800, 600),
+    window(NULL),
+    renderer(NULL),
+    world(NULL)
 {
 }
 
 // -----------------------------------------------------------------------------
-void Game::Init()
+Game::~Game()
 {
-  if (glfwInit() != GL_TRUE)
-    EXCEPT << "Cannot initialise GLFW";
-
-  if (!(window = glfwCreateWindow(vp_width, vp_height, "Game", NULL, NULL)))
-    EXCEPT << "Cannot create GLFW Window";
-
-  glfwMakeContextCurrent(window);
-  if (glewInit() != GLEW_OK)
-    EXCEPT << "Cannot initialise GLEW";
-}
-
-// -----------------------------------------------------------------------------
-void Game::Run()
-{
-  while (!glfwWindowShouldClose(window))
+  if (world)
   {
-    glfwGetWindowSize(window, &vp_width, &vp_height);
-    
-    glfwSwapBuffers(window);
-    glfwPollEvents();
+    delete world;
+    world = NULL;
   }
-}
 
-// -----------------------------------------------------------------------------
-void Game::Destroy()
-{
+  if (renderer)
+  {
+    delete renderer;
+    renderer = NULL;
+  }
+
   if (window != NULL)
   {
     glfwDestroyWindow(window);
@@ -52,28 +38,62 @@ void Game::Destroy()
 }
 
 // -----------------------------------------------------------------------------
+void Game::Init()
+{
+  // Initialise GLFW
+  if (glfwInit() != GL_TRUE)
+  {
+    EXCEPT << "Cannot initialise GLFW";
+  }
+
+  if (!(window = glfwCreateWindow(viewport.x, viewport.y, "Game", NULL, NULL)))
+  {
+    glfwTerminate();
+    EXCEPT << "Cannot create GLFW Window";
+  }
+
+  glfwMakeContextCurrent(window);
+  if (glewInit() != GLEW_OK)
+  {
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    EXCEPT << "Cannot initialise GLEW";    
+  }
+
+  // Initialises the renderer
+  renderer = new Renderer();
+  renderer->Init();
+
+  // Initialises the world
+  world = new World();
+  world->Init();
+}
+
+// -----------------------------------------------------------------------------
+void Game::Run()
+{
+  while (!glfwWindowShouldClose(window))
+  {
+    glfwGetWindowSize(window, &viewport.x, &viewport.y);
+    
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+  }
+}
+
+// -----------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-  Game * game = NULL;
-
   try
   {    
-    game = new Game;
-    game->Init();
-    game->Run();
-    game->Destroy();
-    delete game;
-
+    Game game;
+    game.Init();
+    game.Run();
+    
     return EXIT_SUCCESS;
   }
   catch (std::exception& e)
   {
-    if (game == NULL)
-    {
-      delete game;
-      game = NULL;
-    }
-
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
   }

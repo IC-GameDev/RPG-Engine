@@ -40,6 +40,12 @@ public:
   Exception& operator << (const char * msg);
 
   /**
+   * Appends a string to the message
+   * @param msg Message to be added
+   */
+  Exception& operator << (const std::string& msg);
+
+  /**
    * Appends an integer to the message
    * @param i Integer to be added
    */
