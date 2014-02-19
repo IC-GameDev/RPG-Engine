@@ -1,18 +1,18 @@
 // This file is part of the :(){ :|:& };:'s project
 // Licensing information can be found in the LICENSE file
 // (C) 2014 :(){ :|:& };:. All rights reserved.
-#include "engine/common.h"
+#include "sys/common.h"
 
 
 // -----------------------------------------------------------------------------
-Shader::Shader(const std::string& name_)
+Program::Program(const std::string& name_)
   : name(name_)
   , prog(0)
 {
 }
 
 // -----------------------------------------------------------------------------
-Shader::~Shader()
+Program::~Program()
 {
   if (prog)
   {
@@ -37,7 +37,7 @@ Shader::~Shader()
 }
 
 // -----------------------------------------------------------------------------
-void Shader::Compile(const std::string& file, GLenum type)
+void Program::Compile(const std::string& file, GLenum type)
 {
   GLuint shader;
   std::string buffer;
@@ -99,18 +99,18 @@ void Shader::Compile(const std::string& file, GLenum type)
 }
 
 // -----------------------------------------------------------------------------
-void Shader::Link()
+void Program::Link()
 {
   GLint flag, length;
   std::string buffer;
   std::string name;
-  
+
   // List of attributes & locations
-  struct 
+  struct
   {
     const char *name;
     GLuint loc;
-  } 
+  }
   attribs[] =
   {
     { "in_vertex", 0 },
@@ -168,11 +168,11 @@ void Shader::Link()
 }
 
 // -----------------------------------------------------------------------------
-void Shader::Uniform(const std::string& name, int value)
+void Program::Uniform(const std::string& name, int value)
 {
   std::map<std::string, GLint>::iterator it;
 
-  if ((it = uniforms.find(name)) == uniforms.end()) 
+  if ((it = uniforms.find(name)) == uniforms.end())
   {
     return;
   }
@@ -181,11 +181,11 @@ void Shader::Uniform(const std::string& name, int value)
 }
 
 // -----------------------------------------------------------------------------
-void Shader::Uniform(const std::string& name, const glm::ivec2& vec)
+void Program::Uniform(const std::string& name, const glm::ivec2& vec)
 {
   std::map<std::string, GLint>::iterator it;
 
-  if ((it = uniforms.find(name)) == uniforms.end()) 
+  if ((it = uniforms.find(name)) == uniforms.end())
   {
     return;
   }
@@ -194,11 +194,11 @@ void Shader::Uniform(const std::string& name, const glm::ivec2& vec)
 }
 
 // -----------------------------------------------------------------------------
-void Shader::Uniform(const std::string& name, const glm::vec2& vec)
+void Program::Uniform(const std::string& name, const glm::vec2& vec)
 {
   std::map<std::string, GLint>::iterator it;
 
-  if ((it = uniforms.find(name)) == uniforms.end()) 
+  if ((it = uniforms.find(name)) == uniforms.end())
   {
     return;
   }
@@ -207,11 +207,11 @@ void Shader::Uniform(const std::string& name, const glm::vec2& vec)
 }
 
 // -----------------------------------------------------------------------------
-void Shader::Uniform(const std::string& name, GLenum type, GLuint tex, int attr)
+void Program::Uniform(const std::string& name, GLenum type, GLuint tex, int attr)
 {
   std::map<std::string, GLint>::iterator it;
 
-  if ((it = uniforms.find(name)) == uniforms.end()) 
+  if ((it = uniforms.find(name)) == uniforms.end())
   {
     return;
   }

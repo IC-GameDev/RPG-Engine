@@ -4,6 +4,7 @@
 
 # Gyp & ninja
 out/
+build/
 
 # Compiled Object files
 *.slo

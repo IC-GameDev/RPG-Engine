@@ -4,12 +4,12 @@
 #ifndef __ENGINE_EXCEPTION_H__
 #define __ENGINE_EXCEPTION_H__
 
-#include "engine/common.h"
+#include "sys/common.h"
 
 /**
  * Extended exception class
  *
- * Tracks the origin of the expression & allows 
+ * Tracks the origin of the expression & allows
  * std::stringstream-like formatting
  */
 class Exception : public std::exception
