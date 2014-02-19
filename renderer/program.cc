@@ -3,7 +3,6 @@
 // (C) 2014 :(){ :|:& };:. All rights reserved.
 #include "sys/common.h"
 
-
 // -----------------------------------------------------------------------------
 Program::Program(const std::string& name_)
   : name(name_)

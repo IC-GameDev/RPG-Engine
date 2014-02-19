@@ -4,26 +4,32 @@
 #ifndef __SYS_ENGINE_H__
 #define __SYS_ENGINE_H__
 
-// Class providing an interface to platform-specific features
+// -----------------------------------------------------------------------------
+// Abstract interface to platform-specific features
+// -----------------------------------------------------------------------------
 class Engine
 {
 public:
-                    Engine();
-
   virtual void      Init()    = 0;
   virtual void      Run()     = 0;
   virtual void      Destroy() = 0;
   virtual uint64_t  GetTime() = 0;
 
+  static CVar wndWidth;
+  static CVar wndHeight;
+  static CVar wndTitle;
+  static CVar wndReload;
+  static CVar wndType;
+
 protected:
-  bool          fullscreen;
+  lua_State    *L;
   bool          focus;
   volatile bool running;
-  glm::ivec2    viewport;
-  std::string   title;
 };
 
+// -----------------------------------------------------------------------------
 // Unique engine instance
+// -----------------------------------------------------------------------------
 extern Engine *engine;
 
 #endif /*__GAME_GAME_H__*/

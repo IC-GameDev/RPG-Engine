@@ -3,20 +3,30 @@
 // (C) 2014 :(){ :|:& };:. All rights reserved.
 #include "sys/common.h"
 
+// -----------------------------------------------------------------------------
+static const char *wndTypePool[] = { "windowed", "fullscreen" };
+CVar Engine::wndType("wndType", CVAR_INT | CVAR_CONFIG, "windowed", wndTypePool, "Type of the window");
+
+// -----------------------------------------------------------------------------
 // Linux implementation of platform-specific things
+// -----------------------------------------------------------------------------
 class LinuxEngine : public Engine
 {
 public:
-           LinuxEngine();
+            LinuxEngine();
 
-  void     Init();
-  void     Run();
-  void     Destroy();
-  uint64_t GetTime();
+  void      Init();
+  void      Run();
+  void      Destroy();
+  uint64_t  GetTime();
 
 private:
-  void     InitWindow();
-  void     DestroyWindow();
+  void      InitWindow();
+  void      UpdateWindow();
+  void      DestroyWindow();
+
+  void      InitLua();
+  void      DestroyLua();
 
   Display   *dpy;
   Window     wnd;
@@ -42,45 +52,10 @@ LinuxEngine::LinuxEngine()
 // -----------------------------------------------------------------------------
 void LinuxEngine::Init()
 {
+  InitLua();
   InitWindow();
   renderer->Init();
   world->Load("assets/scripts/test.lua");
-}
-
-// -----------------------------------------------------------------------------
-void LinuxEngine::Run()
-{
-  XEvent evt;
-
-  running = true;
-  while (running)
-  {
-    while (XPending(dpy) > 0)
-    {
-      XNextEvent(dpy, &evt);
-      switch (evt.type)
-      {
-        case ResizeRequest:
-        {
-          XResizeWindow(dpy, wnd, viewport.x, viewport.y);
-          break;
-        }
-        case ClientMessage:
-        {
-          if (evt.xclient.data.l[0] == (int)wndClose)
-          {
-            running = false;
-            break;
-          }
-
-          break;
-        }
-      }
-    }
-
-    renderer->Frame();
-    glXSwapBuffers(dpy, wnd);
-  }
 }
 
 // -----------------------------------------------------------------------------
@@ -89,6 +64,7 @@ void LinuxEngine::Destroy()
   world->Unload();
   renderer->Destroy();
   DestroyWindow();
+  DestroyLua();
 }
 
 // -----------------------------------------------------------------------------
@@ -139,7 +115,8 @@ void LinuxEngine::InitWindow()
   swa.override_redirect = 1;
   swa.event_mask = StructureNotifyMask | ExposureMask |
                    KeyPressMask | ResizeRedirectMask;
-  if (!(wnd = XCreateWindow(dpy, root, 0, 0, viewport.x, viewport.y,
+  if (!(wnd = XCreateWindow(dpy, root, 0, 0,
+                            wndWidth.GetInt(), wndHeight.GetInt(),
                             0, vi->depth, InputOutput, vi->visual,
                             CWColormap | CWEventMask | CWColormap, &swa)))
   {
@@ -160,7 +137,7 @@ void LinuxEngine::InitWindow()
 
   // Map the window
   XEvent evt;
-  XStoreName(dpy, wnd, title.c_str());
+  XStoreName(dpy, wnd, wndTitle.GetString().c_str());
   XMapWindow(dpy, wnd);
   XSync(dpy, False);
   do
@@ -214,11 +191,83 @@ void LinuxEngine::DestroyWindow()
 }
 
 // -----------------------------------------------------------------------------
+void LinuxEngine::UpdateWindow()
+{
+  switch (wndType.GetInt())
+  {
+    // Windowed
+    case 0:
+    {
+
+    }
+    // Fullscreen
+    case 1:
+    {
+
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+void LinuxEngine::Run()
+{
+  XEvent evt;
+
+  running = true;
+  while (running)
+  {
+    while (XPending(dpy) > 0)
+    {
+      XNextEvent(dpy, &evt);
+      switch (evt.type)
+      {
+        case ResizeRequest:
+        {
+          XResizeWindow(dpy, wnd, wndWidth.GetInt(), wndHeight.GetInt());
+          break;
+        }
+        case ClientMessage:
+        {
+          if (evt.xclient.data.l[0] == (int)wndClose)
+          {
+            running = false;
+            break;
+          }
+
+          break;
+        }
+      }
+    }
+
+    if (wndReload.GetBool())
+    {
+      UpdateWindow();
+      wndReload.SetBool(false);
+    }
+
+    renderer->Frame();
+    glXSwapBuffers(dpy, wnd);
+  }
+}
+
+// -----------------------------------------------------------------------------
 uint64_t LinuxEngine::GetTime()
 {
   struct timespec tv;
   clock_gettime(CLOCK_REALTIME, &tv);
   return (uint64_t)tv.tv_sec * 1000000000ull + (uint64_t)tv.tv_nsec;
+}
+
+// -----------------------------------------------------------------------------
+void LinuxEngine::InitLua()
+{
+
+}
+
+// -----------------------------------------------------------------------------
+void LinuxEngine::DestroyLua()
+{
+
 }
 
 // -----------------------------------------------------------------------------

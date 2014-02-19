@@ -32,6 +32,8 @@
 # include "core/hashmap.h"
 # include "core/quadtree.h"
 # include "core/lua.h"
+# include "sys/cvar.h"
+# include "sys/engine.h"
 # include "renderer/program.h"
 # include "renderer/renderer.h"
 # include "game/camera.h"
@@ -40,7 +42,6 @@
 # include "game/building.h"
 # include "game/level.h"
 # include "game/world.h"
-# include "sys/engine.h"
 // Platform specifics
 # if defined(R_WINDOWS)
 #   define WIN32_LEAN_AND_MEAN

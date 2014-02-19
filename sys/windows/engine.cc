@@ -16,6 +16,7 @@ public:
 
 private:
   void     InitWindow();
+  void     UpdateWindow();
   void     DestroyWindow();
 };
 
@@ -47,11 +48,6 @@ void WindowsEngine::Init()
 }
 
 // -----------------------------------------------------------------------------
-void WindowsEngine::Run()
-{
-}
-
-// -----------------------------------------------------------------------------
 void WindowsEngine::Destroy()
 {
   renderer->Destroy();
@@ -65,6 +61,17 @@ void WindowsEngine::InitWindow()
 
 // -----------------------------------------------------------------------------
 void WindowsEngine::DestroyWindow()
+{
+}
+
+// -----------------------------------------------------------------------------
+void WindowsEngine::UpdateWindow()
+{
+
+}
+
+// -----------------------------------------------------------------------------
+void WindowsEngine::Run()
 {
 }
 
