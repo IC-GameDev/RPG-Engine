@@ -4,9 +4,8 @@
 #include "sys/common.h"
 
 // -------------------------------------------------------------------------------------------------
-static const char *wndTypePool[] = { "windowed", "fullscreen" };
-CVar Engine::wndType("wndType", CVAR_INT | CVAR_CONFIG, "windowed", wndTypePool,
-                     "Type of the window");
+static const char *wndTypePool[] = { "windowed", "windowed_fs", "fullscreen", NULL };
+CVar Engine::wndType("wndType", CVAR_INT | CVAR_CONFIG, "windowed_fs", wndTypePool, "Window type");
 
 // -------------------------------------------------------------------------------------------------
 // Linux implementation of platform-specific things
@@ -34,6 +33,11 @@ private:
   Atom       wndClose;
   GLXContext context;
   Colormap   colormap;
+  int        type;
+  int        x;
+  int        y;
+  int        width;
+  int        height;
 };
 
 // Engine instance
@@ -113,11 +117,10 @@ void EngineImpl::InitWindow()
   XSetWindowAttributes swa;
   swa.colormap = colormap;
   swa.border_pixel = 0;
-  swa.override_redirect = 1;
+  swa.override_redirect = True;
   swa.event_mask = StructureNotifyMask | ExposureMask |
                    KeyPressMask | ResizeRedirectMask;
-  if (!(wnd = XCreateWindow(dpy, root, 0, 0,
-                            wndWidth.GetInt(), wndHeight.GetInt(),
+  if (!(wnd = XCreateWindow(dpy, root, 0, 0, 1, 1,
                             0, vi->depth, InputOutput, vi->visual,
                             CWColormap | CWEventMask | CWColormap, &swa)))
   {
@@ -194,19 +197,38 @@ void EngineImpl::DestroyWindow()
 // -------------------------------------------------------------------------------------------------
 void EngineImpl::UpdateWindow()
 {
-  switch (wndType.GetInt())
+  switch (type = wndType.GetInt())
   {
     // Windowed
     case 0:
     {
-
+      XWindowAttributes attr;
+      XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &attr);
+      x = attr.x + ((attr.width - wndWidth.GetInt()) >> 1);
+      y = attr.y + ((attr.height - wndHeight.GetInt()) >> 1);
+      width = wndWidth.GetInt();
+      height = wndHeight.GetInt();
+      break;
     }
-    // Fullscreen
+    // Windowed fullscreen
     case 1:
     {
-
+      XWindowAttributes attr;
+      XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &attr);
+      x = attr.x;
+      y = attr.y;
+      width = attr.width;
+      height = attr.height;
+      break;
+    }
+    // Fullscreen
+    case 2:
+    {
+      break;
     }
   }
+
+  XMoveResizeWindow(dpy, wnd, x, y, width, height);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -224,7 +246,24 @@ void EngineImpl::Run()
       {
         case ResizeRequest:
         {
-          XResizeWindow(dpy, wnd, wndWidth.GetInt(), wndHeight.GetInt());
+          switch (type)
+          {
+            case 0:
+            {
+              XResizeWindow(dpy, wnd, width, height);
+              break;
+            }
+            case 1:
+            {
+              XMoveResizeWindow(dpy, wnd, x, y, width, height);
+              break;
+            }
+            case 2:
+            {
+              break;
+            }
+          }
+
           break;
         }
         case ClientMessage:
