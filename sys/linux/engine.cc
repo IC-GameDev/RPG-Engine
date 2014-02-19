@@ -5,7 +5,7 @@
 
 // -------------------------------------------------------------------------------------------------
 static const char *wndTypePool[] = { "windowed", "windowed_fs", "fullscreen", NULL };
-CVar Engine::wndType("wndType", CVAR_INT | CVAR_CONFIG, "windowed_fs", wndTypePool, "Window type");
+CVar Engine::wndType("wndType", CVAR_INT | CVAR_CONFIG, "fullscreen", wndTypePool, "Window type");
 
 // -------------------------------------------------------------------------------------------------
 // Linux implementation of platform-specific things
@@ -38,6 +38,7 @@ private:
   int        y;
   int        width;
   int        height;
+  bool       fullscreen;
 };
 
 // Engine instance
@@ -51,6 +52,7 @@ EngineImpl::EngineImpl()
   , wndClose(0)
   , context(NULL)
   , colormap(0)
+  , fullscreen(false)
 {
 }
 
@@ -197,38 +199,53 @@ void EngineImpl::DestroyWindow()
 // -------------------------------------------------------------------------------------------------
 void EngineImpl::UpdateWindow()
 {
+  Atom atom;
+  XWindowAttributes attr;
+  XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &attr);
+
   switch (type = wndType.GetInt())
   {
     // Windowed
     case 0:
     {
-      XWindowAttributes attr;
-      XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &attr);
       x = attr.x + ((attr.width - wndWidth.GetInt()) >> 1);
       y = attr.y + ((attr.height - wndHeight.GetInt()) >> 1);
       width = wndWidth.GetInt();
       height = wndHeight.GetInt();
+      fullscreen = false;
       break;
     }
     // Windowed fullscreen
     case 1:
     {
-      XWindowAttributes attr;
-      XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &attr);
+      x = attr.x;
+      y = attr.y;
+      width = attr.width;
+      height = attr.height;
+      fullscreen = false;
+      break;
+    }
+    // Fullscreen
+    case 2:
+    {
+      fullscreen = true;
       x = attr.x;
       y = attr.y;
       width = attr.width;
       height = attr.height;
       break;
     }
-    // Fullscreen
-    case 2:
-    {
-      break;
-    }
   }
 
   XMoveResizeWindow(dpy, wnd, x, y, width, height);
+  if (fullscreen)
+  {
+    if ((atom = XInternAtom(dpy, "_NET_WM_STATE_FULLSCREEN", True)) != 0)
+    {
+      XChangeProperty(dpy, wnd, XInternAtom(dpy, "_NET_WM_STATE", True),
+                      XA_ATOM, 32, PropModeReplace, (uint8_t*)&atom, 1);
+    }
+  }
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -256,10 +273,6 @@ void EngineImpl::Run()
             case 1:
             {
               XMoveResizeWindow(dpy, wnd, x, y, width, height);
-              break;
-            }
-            case 2:
-            {
               break;
             }
           }
