@@ -5,6 +5,7 @@
 #define __ENGINE_COMMON_H__
 
 #define _USE_MATH_DEFINES
+#define GLM_FORCE_RADIANS
 
 #ifdef __cplusplus
 // Standard C
@@ -20,10 +21,10 @@
 # include <sstream>
 # include <vector>
 // Dependencies
-//# include <png.h>
-//# include <lua.hpp>
+# include <png.h>
+# include <lua.hpp>
+# include <rapidjson/rapidjson.h>
 # include <GL/glew.h>
-# define GLM_FORCE_RADIANS
 # include <glm/glm.hpp>
 # include <glm/ext.hpp>
 // Our headers

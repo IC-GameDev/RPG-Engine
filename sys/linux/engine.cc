@@ -44,6 +44,7 @@ void LinuxEngine::Init()
 {
   InitWindow();
   renderer->Init();
+  world->Load("assets/scripts/test.lua");
 }
 
 // -----------------------------------------------------------------------------
@@ -85,6 +86,7 @@ void LinuxEngine::Run()
 // -----------------------------------------------------------------------------
 void LinuxEngine::Destroy()
 {
+  world->Unload();
   renderer->Destroy();
   DestroyWindow();
 }

@@ -7,20 +7,10 @@
 class World
 {
 public:
-  /**
-   * Creates a new empty world
-   */
-  World();
-
-  /**
-   * Destroys the world
-   */
-  ~World();
-
-  /**
-   * Initialises the world
-   */
-  void Init();
+  virtual void Load(const std::string& script) = 0;
+  virtual void Unload() = 0;
 };
+
+extern World *world;
 
 #endif /*__ENGINE_WORLD_H__*/
