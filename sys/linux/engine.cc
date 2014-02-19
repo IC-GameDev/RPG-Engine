@@ -3,17 +3,18 @@
 // (C) 2014 :(){ :|:& };:. All rights reserved.
 #include "sys/common.h"
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 static const char *wndTypePool[] = { "windowed", "fullscreen" };
-CVar Engine::wndType("wndType", CVAR_INT | CVAR_CONFIG, "windowed", wndTypePool, "Type of the window");
+CVar Engine::wndType("wndType", CVAR_INT | CVAR_CONFIG, "windowed", wndTypePool,
+                     "Type of the window");
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Linux implementation of platform-specific things
-// -----------------------------------------------------------------------------
-class LinuxEngine : public Engine
+// -------------------------------------------------------------------------------------------------
+class EngineImpl : public Engine
 {
 public:
-            LinuxEngine();
+            EngineImpl();
 
   void      Init();
   void      Run();
@@ -36,11 +37,11 @@ private:
 };
 
 // Engine instance
-static LinuxEngine engineImpl;
+static EngineImpl engineImpl;
 Engine *engine = &engineImpl;
 
-// -----------------------------------------------------------------------------
-LinuxEngine::LinuxEngine()
+// -------------------------------------------------------------------------------------------------
+EngineImpl::EngineImpl()
   : dpy(NULL)
   , wnd(0)
   , wndClose(0)
@@ -49,8 +50,8 @@ LinuxEngine::LinuxEngine()
 {
 }
 
-// -----------------------------------------------------------------------------
-void LinuxEngine::Init()
+// -------------------------------------------------------------------------------------------------
+void EngineImpl::Init()
 {
   InitLua();
   InitWindow();
@@ -58,8 +59,8 @@ void LinuxEngine::Init()
   world->Load("assets/scripts/test.lua");
 }
 
-// -----------------------------------------------------------------------------
-void LinuxEngine::Destroy()
+// -------------------------------------------------------------------------------------------------
+void EngineImpl::Destroy()
 {
   world->Unload();
   renderer->Destroy();
@@ -67,8 +68,8 @@ void LinuxEngine::Destroy()
   DestroyLua();
 }
 
-// -----------------------------------------------------------------------------
-void LinuxEngine::InitWindow()
+// -------------------------------------------------------------------------------------------------
+void EngineImpl::InitWindow()
 {
   // Open the X display
   Window root;
@@ -161,8 +162,8 @@ void LinuxEngine::InitWindow()
   }
 }
 
-// -----------------------------------------------------------------------------
-void LinuxEngine::DestroyWindow()
+// -------------------------------------------------------------------------------------------------
+void EngineImpl::DestroyWindow()
 {
   if (context)
   {
@@ -190,8 +191,8 @@ void LinuxEngine::DestroyWindow()
   }
 }
 
-// -----------------------------------------------------------------------------
-void LinuxEngine::UpdateWindow()
+// -------------------------------------------------------------------------------------------------
+void EngineImpl::UpdateWindow()
 {
   switch (wndType.GetInt())
   {
@@ -208,8 +209,8 @@ void LinuxEngine::UpdateWindow()
   }
 }
 
-// -----------------------------------------------------------------------------
-void LinuxEngine::Run()
+// -------------------------------------------------------------------------------------------------
+void EngineImpl::Run()
 {
   XEvent evt;
 
@@ -250,27 +251,27 @@ void LinuxEngine::Run()
   }
 }
 
-// -----------------------------------------------------------------------------
-uint64_t LinuxEngine::GetTime()
+// -------------------------------------------------------------------------------------------------
+uint64_t EngineImpl::GetTime()
 {
   struct timespec tv;
   clock_gettime(CLOCK_REALTIME, &tv);
   return (uint64_t)tv.tv_sec * 1000000000ull + (uint64_t)tv.tv_nsec;
 }
 
-// -----------------------------------------------------------------------------
-void LinuxEngine::InitLua()
+// -------------------------------------------------------------------------------------------------
+void EngineImpl::InitLua()
 {
 
 }
 
-// -----------------------------------------------------------------------------
-void LinuxEngine::DestroyLua()
+// -------------------------------------------------------------------------------------------------
+void EngineImpl::DestroyLua()
 {
 
 }
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
   try

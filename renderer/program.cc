@@ -3,14 +3,14 @@
 // (C) 2014 :(){ :|:& };:. All rights reserved.
 #include "sys/common.h"
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 Program::Program(const std::string& name_)
   : name(name_)
   , prog(0)
 {
 }
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 Program::~Program()
 {
   if (prog)
@@ -35,7 +35,7 @@ Program::~Program()
   }
 }
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 void Program::Compile(const std::string& file, GLenum type)
 {
   GLuint shader;
@@ -97,7 +97,7 @@ void Program::Compile(const std::string& file, GLenum type)
   glAttachShader(prog, shader);
 }
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 void Program::Link()
 {
   GLint flag, length;
@@ -166,7 +166,7 @@ void Program::Link()
   }
 }
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 void Program::Uniform(const std::string& name, int value)
 {
   std::map<std::string, GLint>::iterator it;
@@ -179,7 +179,7 @@ void Program::Uniform(const std::string& name, int value)
   glUniform1i(it->second, value);
 }
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 void Program::Uniform(const std::string& name, const glm::ivec2& vec)
 {
   std::map<std::string, GLint>::iterator it;
@@ -192,7 +192,7 @@ void Program::Uniform(const std::string& name, const glm::ivec2& vec)
   glUniform2iv(it->second, 1, glm::value_ptr(vec));
 }
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 void Program::Uniform(const std::string& name, const glm::vec2& vec)
 {
   std::map<std::string, GLint>::iterator it;
@@ -205,7 +205,7 @@ void Program::Uniform(const std::string& name, const glm::vec2& vec)
   glUniform2fv(it->second, 1, glm::value_ptr(vec));
 }
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 void Program::Uniform(const std::string& name, GLenum type, GLuint tex, int attr)
 {
   std::map<std::string, GLint>::iterator it;
