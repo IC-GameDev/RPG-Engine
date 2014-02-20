@@ -1,7 +1,10 @@
 
-
 Linux
 -----
 
-run GYP_GENERATORS=ninja gyp --depth . && ninja -C out/Debug
+Install dependencies: lua, glm, glew, rapidjson
 
+  mkdir build
+  cd build
+  cmake ..
+  make
