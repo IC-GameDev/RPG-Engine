@@ -1,6 +1,9 @@
 
 
+uniform mat4 u_proj;
+uniform mat4 u_view;
+
 void main()
 {
-  gl_Position = vec4(0.0);
+  gl_Position = u_proj * u_view * gl_Vertex;
 }

@@ -3,60 +3,54 @@
 // (C) 2014 :(){ :|:& };:. All rights reserved.
 #include "sys/common.h"
 
-// -------------------------------------------------------------------------------------------------
-static const char *wndTypePool[] = { "windowed", "windowed_fs", "fullscreen", NULL };
-CVar Engine::wndType("wndType", CVAR_INT | CVAR_CONFIG, "fullscreen", wndTypePool, "Window type");
+// -----------------------------------------------------------------------------
+static const char *wndTypePool[] = { "windowed", NULL };
+CVar Engine::wndType("wndType", CVAR_INT | CVAR_CONFIG, "windowed", wndTypePool, "Window type");
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Linux implementation of platform-specific things
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class EngineImpl : public Engine
 {
 public:
-            EngineImpl();
-
-  void      Init();
-  void      Run();
-  void      Destroy();
-  uint64_t  GetTime();
+                        EngineImpl();
+  void                  Init();
+  void                  Run();
+  void                  Destroy();
+  uint64_t              GetTime();
 
 private:
-  void      InitWindow();
-  void      UpdateWindow();
-  void      DestroyWindow();
+  void                  InitWindow();
+  void                  UpdateWindow();
+  void                  DestroyWindow();
+  void                  InitLua();
+  void                  DestroyLua();
 
-  void      InitLua();
-  void      DestroyLua();
-
-  Display   *dpy;
-  Window     wnd;
-  Atom       wndClose;
-  GLXContext context;
-  Colormap   colormap;
-  int        type;
-  int        x;
-  int        y;
-  int        width;
-  int        height;
-  bool       fullscreen;
+  Display              *dpy;
+  Window                wnd;
+  Atom                  wndClose;
+  GLXContext            context;
+  Colormap              colormap;
+  XF86VidModeModeInfo  *desktop;
+  XF86VidModeModeInfo **modes;
+  int                   modeCount;
 };
 
 // Engine instance
 static EngineImpl engineImpl;
 Engine *engine = &engineImpl;
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EngineImpl::EngineImpl()
   : dpy(NULL)
   , wnd(0)
   , wndClose(0)
   , context(NULL)
   , colormap(0)
-  , fullscreen(false)
 {
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EngineImpl::Init()
 {
   InitLua();
@@ -65,7 +59,7 @@ void EngineImpl::Init()
   world->Load("assets/scripts/test.lua");
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EngineImpl::Destroy()
 {
   world->Unload();
@@ -74,7 +68,7 @@ void EngineImpl::Destroy()
   DestroyLua();
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EngineImpl::InitWindow()
 {
   // Open the X display
@@ -95,10 +89,8 @@ void EngineImpl::InitWindow()
   static int ATTR[] =
   {
     GLX_RGBA,
-    GLX_RED_SIZE,       8,
-    GLX_GREEN_SIZE,     8,
-    GLX_BLUE_SIZE,      8,
-    GLX_DOUBLEBUFFER,   2,
+    GLX_DEPTH_SIZE, 24,
+    GLX_DOUBLEBUFFER,
     None
   };
 
@@ -117,39 +109,40 @@ void EngineImpl::InitWindow()
 
   // Create the window
   XSetWindowAttributes swa;
-  swa.colormap = colormap;
   swa.border_pixel = 0;
-  swa.override_redirect = True;
-  swa.event_mask = StructureNotifyMask | ExposureMask |
-                   KeyPressMask | ResizeRedirectMask;
-  if (!(wnd = XCreateWindow(dpy, root, 0, 0, 1, 1,
+  swa.colormap = colormap;
+  swa.event_mask = ExposureMask | KeyPressMask |
+                   ButtonPressMask |StructureNotifyMask;
+  if (!(wnd = XCreateWindow(dpy, root, 0, 0,
+                            wndWidth.GetInt(), wndHeight.GetInt(),
                             0, vi->depth, InputOutput, vi->visual,
-                            CWColormap | CWEventMask | CWColormap, &swa)))
+                            CWBorderPixel | CWColormap | CWEventMask, &swa)))
   {
     EXCEPT << "Cannot create X window";
   }
+
+  // Set window title
+  XStoreName(dpy, wnd, wndTitle.GetString().c_str());
 
   // Catch window close events
   wndClose = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
   XSetWMProtocols(dpy, wnd, &wndClose, 1);
 
-  // Make this window a popup
-  Atom atom;
-  if ((atom = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_DIALOG", True)) != 0)
-  {
-    XChangeProperty(dpy, wnd, XInternAtom(dpy, "_NET_WM_WINDOW_TYPE", True),
-                    XA_ATOM, 32, PropModeReplace, (uint8_t*)&atom, 1);
-  }
-
   // Map the window
   XEvent evt;
-  XStoreName(dpy, wnd, wndTitle.GetString().c_str());
   XMapWindow(dpy, wnd);
   XSync(dpy, False);
   do
   {
     XNextEvent(dpy, &evt);
   } while (evt.type != MapNotify);
+
+  // Retrieve available fullscreen modes
+  if (!XF86VidModeGetAllModeLines(dpy, DefaultScreen(dpy), &modeCount, &modes))
+  {
+    XFree(vi);
+    EXCEPT << "Cannot retrieve fullscreen modes";
+  }
 
   // Create the OpenGL context
   context = glXCreateContext(dpy, vi, NULL, GL_TRUE);
@@ -167,7 +160,7 @@ void EngineImpl::InitWindow()
   }
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EngineImpl::DestroyWindow()
 {
   if (context)
@@ -179,6 +172,12 @@ void EngineImpl::DestroyWindow()
 
   if (wnd)
   {
+    if (wndType.GetInt() == 1)
+    {
+      XF86VidModeSwitchToMode(dpy, DefaultScreen(dpy), modes[0]);
+      XF86VidModeSetViewPort(dpy, DefaultScreen(dpy), 0, 0);
+    }
+
     XDestroyWindow(dpy, wnd);
     wnd = 0;
   }
@@ -196,63 +195,46 @@ void EngineImpl::DestroyWindow()
   }
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EngineImpl::UpdateWindow()
 {
-  Atom atom;
   XWindowAttributes attr;
-  XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &attr);
+  XSetWindowAttributes swa;
 
-  switch (type = wndType.GetInt())
+  XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &attr);
+  XStoreName(dpy, wnd, wndTitle.GetString().c_str());
+
+  switch (wndType.GetInt())
   {
-    // Windowed
     case 0:
     {
-      x = attr.x + ((attr.width - wndWidth.GetInt()) >> 1);
-      y = attr.y + ((attr.height - wndHeight.GetInt()) >> 1);
-      width = wndWidth.GetInt();
-      height = wndHeight.GetInt();
-      fullscreen = false;
-      break;
-    }
-    // Windowed fullscreen
-    case 1:
-    {
-      x = attr.x;
-      y = attr.y;
-      width = attr.width;
-      height = attr.height;
-      fullscreen = false;
-      break;
-    }
-    // Fullscreen
-    case 2:
-    {
-      fullscreen = true;
-      x = attr.x;
-      y = attr.y;
-      width = attr.width;
-      height = attr.height;
-      break;
-    }
-  }
+      XF86VidModeSwitchToMode(dpy, DefaultScreen(dpy), modes[0]);
+      XF86VidModeSetViewPort(dpy, DefaultScreen(dpy), 0, 0);
 
-  XMoveResizeWindow(dpy, wnd, x, y, width, height);
-  if (fullscreen)
-  {
-    if ((atom = XInternAtom(dpy, "_NET_WM_STATE_FULLSCREEN", True)) != 0)
-    {
-      XChangeProperty(dpy, wnd, XInternAtom(dpy, "_NET_WM_STATE", True),
-                      XA_ATOM, 32, PropModeReplace, (uint8_t*)&atom, 1);
+      attr.x = attr.x + ((attr.width - wndWidth.GetInt()) >> 1);
+      attr.y = attr.y + ((attr.height - wndHeight.GetInt()) >> 1);
+      attr.width = wndWidth.GetInt();
+      attr.height = wndHeight.GetInt();
+      XMoveResizeWindow(dpy, wnd, attr.x, attr.y, attr.width, attr.height);
+
+      Renderer::vpWidth.SetInt(attr.width);
+      Renderer::vpHeight.SetInt(attr.height);
+
+      swa.override_redirect = False;
+      XChangeWindowAttributes(dpy, wnd, CWOverrideRedirect, &swa);
+      XMapRaised(dpy, wnd);
+      break;
     }
   }
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EngineImpl::Run()
 {
   XEvent evt;
+  XWindowAttributes attr;
 
+  int a = 0;
   running = true;
   while (running)
   {
@@ -261,22 +243,9 @@ void EngineImpl::Run()
       XNextEvent(dpy, &evt);
       switch (evt.type)
       {
+        case ConfigureNotify:
         case ResizeRequest:
         {
-          switch (type)
-          {
-            case 0:
-            {
-              XResizeWindow(dpy, wnd, width, height);
-              break;
-            }
-            case 1:
-            {
-              XMoveResizeWindow(dpy, wnd, x, y, width, height);
-              break;
-            }
-          }
-
           break;
         }
         case ClientMessage:
@@ -286,7 +255,6 @@ void EngineImpl::Run()
             running = false;
             break;
           }
-
           break;
         }
       }
@@ -298,12 +266,14 @@ void EngineImpl::Run()
       wndReload.SetBool(false);
     }
 
+    world->Render(renderer->GetBuffer());
     renderer->Frame();
+    renderer->SwapBuffers();
     glXSwapBuffers(dpy, wnd);
   }
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 uint64_t EngineImpl::GetTime()
 {
   struct timespec tv;
@@ -311,19 +281,19 @@ uint64_t EngineImpl::GetTime()
   return (uint64_t)tv.tv_sec * 1000000000ull + (uint64_t)tv.tv_nsec;
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EngineImpl::InitLua()
 {
 
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EngineImpl::DestroyLua()
 {
 
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
   try

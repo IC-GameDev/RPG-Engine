@@ -34,6 +34,8 @@
 # include "core/lua.h"
 # include "sys/cvar.h"
 # include "sys/engine.h"
+# include "renderer/buffer.h"
+# include "renderer/meshmngr.h"
 # include "renderer/program.h"
 # include "renderer/renderer.h"
 # include "game/camera.h"
@@ -50,6 +52,7 @@
 #   include <X11/Xlib.h>
 #   include <X11/Xatom.h>
 #   include <X11/Xutil.h>
+#   include <X11/extensions/xf86vmode.h>
 #   include <GL/glx.h>
 # elif defined(R_MAC)
 # else

@@ -9,6 +9,7 @@ class World
 public:
   virtual void Load(const std::string& script) = 0;
   virtual void Unload() = 0;
+  virtual void Render(RenderBuffer *buffer) = 0;
 };
 
 extern World *world;

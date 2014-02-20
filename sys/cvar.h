@@ -4,7 +4,7 @@
 #ifndef __SYS_CVAR_H__
 #define __SYS_CVAR_H__
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 typedef enum
 {
   CVAR_BOOL       = (1 <<  0),
@@ -16,7 +16,7 @@ typedef enum
   CVAR_CONFIG     = (1 <<  6),    // read & write to config file
 } cvarFlags_t;
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class CVar
 {
 public:
@@ -70,21 +70,21 @@ private:
   friend class       CVarSystem;
 };
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 inline CVar::CVar(const std::string& name, int flags, const std::string& val,
                   const std::string& desc)
 {
   Init(name, flags, val, -FLT_MAX, FLT_MAX, NULL, desc);
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 inline CVar::CVar(const std::string& name, int flags, const std::string& val,
                   float min, float max, const std::string& desc)
 {
   Init(name, flags, val, min, max, NULL, desc);
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 inline CVar::CVar(const std::string& name, int flags, const std::string& val,
                   const char ** pool, const std::string& desc)
 {

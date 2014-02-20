@@ -3,13 +3,13 @@
 // (C) 2014 :(){ :|:& };:. All rights reserved.
 #include "sys/common.h"
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 static const char *wndTypePool[] = { "windowed", "fullscreen", "windowed_fs" };
 CVar Engine::wndType("wndType", CVAR_INT | CVAR_CONFIG, "windowed", wndTypePool, "Window type");
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Windows implementation of platform-specific features
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class EngineImpl : public Engine
 {
 public:
@@ -33,12 +33,13 @@ private:
   bool        fullscreen;
 };
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 static EngineImpl engineImpl;
 Engine *engine = &engineImpl;
 
-// -------------------------------------------------------------------------------------------------
-LRESULT CALLBACK EngineImpl::WndProc(HWND handle, UINT msg, WPARAM wp, LPARAM lp)
+// -----------------------------------------------------------------------------
+LRESULT CALLBACK EngineImpl::WndProc(HWND handle, UINT msg,
+                                     WPARAM wp, LPARAM lp)
 {
   EngineImpl * e;
   if (msg == WM_CREATE)
@@ -68,7 +69,7 @@ LRESULT CALLBACK EngineImpl::WndProc(HWND handle, UINT msg, WPARAM wp, LPARAM lp
   return DefWindowProc(handle, msg, wp, lp);
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 EngineImpl::EngineImpl()
   : inst(GetModuleHandle(NULL))
   , window(NULL)
@@ -79,21 +80,21 @@ EngineImpl::EngineImpl()
 }
 
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EngineImpl::Init()
 {
   InitWindow();
   renderer->Init();
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EngineImpl::Destroy()
 {
   renderer->Destroy();
   DestroyWindow();
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EngineImpl::InitWindow()
 {
   PIXELFORMATDESCRIPTOR pfd;
@@ -125,7 +126,8 @@ void EngineImpl::InitWindow()
   }
 
   // Create the actual window
-  if (!(window = CreateWindowEx(0, "vkEngine", "", WS_SYSMENU, 0, 0, 0, 0, 0, 0, inst, this)))
+  if (!(window = CreateWindowEx(0, "vkEngine", "", WS_SYSMENU,
+                                0, 0, 0, 0, 0, 0, inst, this)))
   {
     EXCEPT << "Cannot create window";
   }
@@ -166,7 +168,7 @@ void EngineImpl::InitWindow()
   wglMakeCurrent(NULL, NULL);
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EngineImpl::DestroyWindow()
 {
   WNDCLASSEX wc;
@@ -203,7 +205,7 @@ void EngineImpl::DestroyWindow()
   }
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EngineImpl::UpdateWindow()
 {
   DWORD style, exStyle;
@@ -237,14 +239,14 @@ void EngineImpl::UpdateWindow()
 
       if (!GetMonitorInfo(hmm, &mm))
       {
-          r.left   = 0;
-          r.top    = 0;
-          r.right  = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-          r.bottom = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+        r.left   = 0;
+        r.top    = 0;
+        r.right  = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+        r.bottom = GetSystemMetrics(SM_CYVIRTUALSCREEN);
       }
       else
       {
-          r = mm.rcMonitor;
+        r = mm.rcMonitor;
       }
 
       exStyle = WS_EX_APPWINDOW;
@@ -278,7 +280,6 @@ void EngineImpl::UpdateWindow()
       {
         throw vkException("[Engine] Cannot switch to fullscreen");
       }
-
       break;
     }
   }
@@ -288,10 +289,12 @@ void EngineImpl::UpdateWindow()
   SetWindowLongPtr(window, GWL_STYLE, style);
   SetWindowLongPtr(window, GWL_EXSTYLE, exStyle);
   SetWindowText(window, wndTitle.GetString());
-  SetWindowPos(window, NULL, r.left, r.top, r.right - r.left, r.bottom - r.top, SWP_SHOWWINDOW);
+  SetWindowPos(window, NULL, r.left, r.top,
+               r.right - r.left, r.bottom - r.top,
+               SWP_SHOWWINDOW);
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void EngineImpl::Run()
 {
   MSG msg;
@@ -316,7 +319,7 @@ void EngineImpl::Run()
   }
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
   try

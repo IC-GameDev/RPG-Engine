@@ -7,9 +7,10 @@
 class WorldImpl : public World
 {
 public:
-        WorldImpl();
-  void  Load(const std::string& file);
-  void  Unload();
+            WorldImpl();
+  void      Load(const std::string& file);
+  void      Unload();
+  void      Render(RenderBuffer *buffer);
 
 private:
   lua_State *L;
@@ -19,13 +20,13 @@ private:
 static WorldImpl worldImpl;
 World *world = &worldImpl;
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 WorldImpl::WorldImpl()
   : L(NULL)
 {
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void WorldImpl::Load(const std::string& file)
 {
   // Create a new lua state
@@ -60,7 +61,7 @@ void WorldImpl::Load(const std::string& file)
   }
 }
 
-// -------------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void WorldImpl::Unload()
 {
   if (L)
@@ -68,4 +69,23 @@ void WorldImpl::Unload()
     lua_close(L);
     L = NULL;
   }
+}
+
+float data[] =
+{
+  0.0f, 0.0f, 0.0f,
+  0.0f, 1.0f, 0.0f,
+  1.0f, 0.0f, 0.0f,
+  1.0f, 0.0f, 0.0f,
+  0.0f, 1.0f, 0.0f,
+  1.0f, 1.0f, 0.0f
+};
+
+// -----------------------------------------------------------------------------
+void WorldImpl::Render(RenderBuffer *buffer)
+{
+  RBTerrain chunk;
+  chunk.data = data;
+  chunk.local = glm::mat4(1.0f);
+  buffer->terrain.push_back(chunk);
 }

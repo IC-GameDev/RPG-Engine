@@ -12,10 +12,12 @@ public:
 
   void Compile(const std::string& file, GLenum type);
   void Link();
+  void Bind() { glUseProgram(prog); }
 
   void Uniform(const std::string& name, int value);
   void Uniform(const std::string& name, const glm::ivec2& vec);
   void Uniform(const std::string& name, const glm::vec2& vec);
+  void Uniform(const std::string& name, const glm::mat4& vec);
   void Uniform(const std::string& name, GLenum type, GLuint tex, int attr);
 
 private:
