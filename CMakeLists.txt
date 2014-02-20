@@ -2,91 +2,103 @@
 # Licensing information can be found in the LICENSE file
 # (C) 2014 :(){ :|:& };:. All rights reserved.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-PROJECT(rpg)
+cmake_minimum_required(VERSION 2.8)
+project(rpg)
+
+# Include modules
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
+
+# Set default build type
+if(CMAKE_BUILD_TYPE STREQUAL "")
+    # CMake defaults to leaving CMAKE_BUILD_TYPE empty so default to
+    # building debug symbols
+    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None (CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif()
+
+# Set install location
+set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/bin")
+
+# Make sure executables are placed in the install directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX})
+foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_INSTALL_PREFIX})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_INSTALL_PREFIX})
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_INSTALL_PREFIX})
+endforeach()
 
 # Dependencies
-FIND_PACKAGE(OpenGL REQUIRED)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
+find_package(OpenGL REQUIRED)
+include_directories(${CMAKE_SOURCE_DIR})
 
 # Game logic & entity system
-FILE(GLOB GAME_SOURCES "game/*.cc")
-FILE(GLOB GAME_HEADERS "game/*.h")
-SOURCE_GROUP(game FILES ${GAME_SOURCES} ${GAME_HEADERS})
+file(GLOB GAME_SOURCES "game/*.cc")
+file(GLOB GAME_HEADERS "game/*.h")
+set(SOURCES ${SOURCES} ${GAME_SOURCES})
+set(HEADERS ${HEADERS} ${GAME_HEADERS})
+source_group(game FILES ${GAME_SOURCES} ${GAME_HEADERS})
 
 # Common library
-FILE(GLOB CORE_SOURCES "core/*.cc")
-FILE(GLOB CORE_HEADERS "core/*.h")
-SOURCE_GROUP(lib FILES ${CORE_SOURCES} ${CORE_HEADERS})
+file(GLOB CORE_SOURCES "core/*.cc")
+file(GLOB CORE_HEADERS "core/*.h")
+set(SOURCES ${SOURCES} ${CORE_SOURCES})
+set(HEADERS ${HEADERS} ${CORE_HEADERS})
+source_group(lib FILES ${CORE_SOURCES} ${CORE_HEADERS})
 
 # Renderer
-FILE(GLOB RENDERER_SOURCES "renderer/*.cc")
-FILE(GLOB RENDERER_HEADERS "renderer/*.h")
-SOURCE_GROUP(renderer FILES ${RENDERER_SOURCES} ${RENDERER_HEADERS})
+file(GLOB RENDERER_SOURCES "renderer/*.cc")
+file(GLOB RENDERER_HEADERS "renderer/*.h")
+set(SOURCES ${SOURCES} ${RENDERER_SOURCES})
+set(HEADERS ${HEADERS} ${RENDERER_HEADERS})
+source_group(renderer FILES ${RENDERER_SOURCES} ${RENDERER_HEADERS})
 
-# Resource manager
-FILE(GLOB RSMNGR_SOURCES "rsmngr/*.cc")
-FILE(GLOB RSMNGR_HEADERS "rsmngr/*.h")
-SOURCE_GROUP(rsmngr FILE ${RSMNGR_SOURCES} ${RSMNGR_HEADERS})
+# Resource Manager
+file(GLOB RSMNGR_SOURCES "rsmngr/*.cc")
+file(GLOB RSMNGR_HEADERS "rsmngr/*.h")
+set(SOURCES ${SOURCES} ${RSMNGR_SOURCES})
+set(HEADERS ${HEADERS} ${RSMNGR_HEADERS})
+source_group(rsmngr FILE ${RSMNGR_SOURCES} ${RSMNGR_HEADERS})
 
-# Platform specifics
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    FILE(GLOB SYS_PLATFORM_SOURCES "sys/windows/*.cc")
-    FILE(GLOB SYS_PLATFORM_HEADERS "sys/windows/*.h")
-    ADD_DEFINITIONS(-DR_WINDOWS)
-    SET(LIB_PLATFORM opengl32.lib)
-    SET(FLAGS WIN32)
-ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    FILE(GLOB SYS_PLATFORM_SOURCES "sys/linux/*.cc")
-    FILE(GLOB SYS_PLATFORM_HEADERS "sys/linux/*.h")
-    ADD_DEFINITIONS(-DR_LINUX)
-    SET(LIB_PLATFORM GL X11 GLEW lua Xxf86vm)
-    SET(FLAGS)
-ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+# System
+if(WIN32)
+    file(GLOB SYS_PLATFORM_SOURCES "sys/windows/*.cc")
+    file(GLOB SYS_PLATFORM_HEADERS "sys/windows/*.h")
+    add_definitions(-DR_WINDOWS)
+    set(FLAGS WIN32)
+elseif(APPLE)
     FILE(GLOB SYS_PLATFORM_SOURCES "sys/mac/*.cc")
     FILE(GLOB SYS_PLATFORM_HEADERS "sys/mac/*.h")
-    ADD_DEFINITIONS(-DR_MAC)
-    SET(LIB_PLATFORM GL)
-    SET(FLAGS)
-ENDIF()
-
-FILE(GLOB SYS_SOURCES "sys/*.cc")
-FILE(GLOB SYS_HEADERS "sys/*.h")
-SOURCE_GROUP(sys FILES ${SYS_SOURCES} ${SYS_HEADERS})
-SOURCE_GROUP(platform FILES ${SYS_PLATFORM_SOURCES} ${SYS_PLATFORM_HEADERS})
+    add_definitions(-DR_MAC)
+    #set(LIB_PLATFORM GL)
+    set(FLAGS MACOSX_BUNDLE)
+else()
+    FILE(GLOB SYS_PLATFORM_SOURCES "sys/linux/*.cc")
+    FILE(GLOB SYS_PLATFORM_HEADERS "sys/linux/*.h")
+    add_definitions(-DR_LINUX)
+    set(LIB_PLATFORM GL X11 GLEW lua Xxf86vm)
+    set(FLAGS)
+endif()
+file(GLOB SYS_SOURCES "sys/*.cc")
+file(GLOB SYS_HEADERS "sys/*.h")
+set(SOURCES ${SOURCES} ${SYS_SOURCES} ${SYS_PLATFORM_SOURCES})
+set(HEADERS ${HEADERS} ${SYS_HEADERS} ${SYS_PLATFORM_HEADERS})
+source_group(sys FILES ${SYS_SOURCES} ${SYS_HEADERS})
+source_group(sys\\platform FILES ${SYS_PLATFORM_SOURCES} ${SYS_PLATFORM_HEADERS})
 
 # Compiler specifics
-IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    ADD_DEFINITIONS(-DR_VCC)
-    SET(CMAKE_C_FLAGS)
-    SET(CMAKE_CXX_FLAGS)
-    SET(LIB_COMPILER)
-ELSEIF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    ADD_DEFINITIONS(-DR_GCC)
-    SET(CMAKE_C_FLAGS)
-    SET(CMAKE_CXX_FLAGS)
-    SET(LIB_COMPILER)
-ELSEIF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    ADD_DEFINITIONS(-DR_CLANG)
-    SET(CMAKE_CXX_FLAGS -g)
-    SET(LIB_COMPILER)
-ENDIF()
-
-# Collect sources
-SET(SOURCES ${GAME_SOURCES}
-            ${CORE_SOURCES}
-            ${RENDERER_SOURCES}
-            ${RSMNGR_SOURCES}
-            ${SYS_SOURCES}
-            ${SYS_PLATFORM_SOURCES})
-
-SET(HEADERS ${GAME_HEADERS}
-            ${CORE_HEADERS}
-            ${RENDERER_HEADERS}
-            ${RSMNGR_HEADERS}
-            ${SYS_HEADERS}
-            ${SYS_PLATFORM_HEADERS})
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    add_definitions(-DR_VCC)
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    add_definitions(-DR_GCC)
+    SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    add_definitions(-DR_CLANG)
+    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
+endif()
 
 # Executable
-ADD_EXECUTABLE(game ${FLAGS} ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(game ${LIB_PLATFORM} ${LIB_COMPILER})
+include_directories(${INCLUDES})
+add_executable(rpg ${FLAGS} ${SOURCES} ${HEADERS})
+target_link_libraries(rpg ${LIBS})
