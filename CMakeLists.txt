@@ -32,12 +32,12 @@ endforeach()
 # Dependencies
 include_directories(${CMAKE_SOURCE_DIR}/src)
 set(DEPENDENCIES_DIR "./dependencies/" CACHE STRING "Directory to an extracted dependencies package")
-    
+
 # OpenGL
 find_package(OpenGL REQUIRED)
 if (WIN32)
     # GLEW
-    set(GLEW_USE_STATIC_LIBS ON)   
+    set(GLEW_USE_STATIC_LIBS ON)
     set(GLEW_ROOT_DIR "${DEPENDENCIES_DIR}/glew")
     find_package(GLEW REQUIRED)
     add_definitions(${GLEW_DEFINITIONS})
@@ -103,7 +103,7 @@ else()
     FILE(GLOB SYS_PLATFORM_SOURCES "src/sys/linux/*.cc")
     FILE(GLOB SYS_PLATFORM_HEADERS "src/sys/linux/*.h")
     add_definitions(-DR_LINUX)
-    set(LIBS GL X11 GLEW lua Xxf86vm)
+    set(LIBS GL X11 GLEW lua Xxf86vm pthread)
     set(FLAGS)
 endif()
 file(GLOB SYS_SOURCES "src/sys/*.cc")

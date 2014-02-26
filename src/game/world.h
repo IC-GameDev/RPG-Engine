@@ -4,12 +4,17 @@
 #ifndef __ENGINE_WORLD_H__
 #define __ENGINE_WORLD_H__
 
-class World
+// -----------------------------------------------------------------------------
+// Game logic
+// -----------------------------------------------------------------------------
+class World : public Thread
 {
 public:
-  virtual void Load(const std::string& script) = 0;
-  virtual void Unload() = 0;
-  virtual void Render(RenderBuffer *buffer) = 0;
+  virtual void        Init(const std::string& script) = 0;
+  virtual void        Destroy() = 0;
+  virtual void        Render(RenderBuffer *buffer) = 0;
+  virtual void        PostEvent(const InputEvent& event) = 0;
+  virtual const char *GetThreadName() = 0;
 };
 
 extern World *world;

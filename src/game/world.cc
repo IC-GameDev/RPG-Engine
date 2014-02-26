@@ -3,20 +3,30 @@
 // (C) 2014 :(){ :|:& };:. All rights reserved.
 #include "sys/common.h"
 
+// -----------------------------------------------------------------------------
 // Implementation of the world
+// -----------------------------------------------------------------------------
 class WorldImpl : public World
 {
 public:
-            WorldImpl();
-  void      Load(const std::string& file);
-  void      Unload();
-  void      Render(RenderBuffer *buffer);
+                WorldImpl();
+  void          Init(const std::string& file);
+  void          Run();
+  void          Destroy();
+  void          Render(RenderBuffer *buffer);
+  void          PostEvent(const InputEvent& evt);
+  const char   *GetThreadName() { return "world"; }
 
 private:
-  lua_State *L;
+  void          HandleEvent(const InputEvent& evt);
+
+  lua_State                   *L;
+  AsyncQueue<InputEvent, 100>  queue;
 };
 
+// -----------------------------------------------------------------------------
 // Unique world instance
+// -----------------------------------------------------------------------------
 static WorldImpl worldImpl;
 World *world = &worldImpl;
 
@@ -27,7 +37,7 @@ WorldImpl::WorldImpl()
 }
 
 // -----------------------------------------------------------------------------
-void WorldImpl::Load(const std::string& file)
+void WorldImpl::Init(const std::string& file)
 {
   // Create a new lua state
   if (!(L = luaL_newstate()))
@@ -62,7 +72,7 @@ void WorldImpl::Load(const std::string& file)
 }
 
 // -----------------------------------------------------------------------------
-void WorldImpl::Unload()
+void WorldImpl::Destroy()
 {
   if (L)
   {
@@ -88,4 +98,35 @@ void WorldImpl::Render(RenderBuffer *buffer)
   chunk.data = data;
   chunk.local = glm::mat4(1.0f);
   buffer->terrain.push_back(chunk);
+}
+
+// -----------------------------------------------------------------------------
+void WorldImpl::Run()
+{
+  InputEvent event;
+  while (threadMngr->IsRunning())
+  {
+    while (!queue.Empty())
+    {
+      switch ((event = queue.Pop()).type)
+      {
+        case EVT_KEYBOARD:
+        {
+          std::cout << "KeyEvent" << std::endl;
+          break;
+        }
+      }
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+void WorldImpl::PostEvent(const InputEvent& event)
+{
+  queue.Push(event);
+}
+
+// -----------------------------------------------------------------------------
+void WorldImpl::HandleEvent(const InputEvent& event)
+{
 }

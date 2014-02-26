@@ -7,7 +7,7 @@
 // -----------------------------------------------------------------------------
 // The cool part of the engine
 // -----------------------------------------------------------------------------
-class Renderer
+class Renderer : public Thread
 {
 public:
   virtual void          Init() = 0;
@@ -16,9 +16,11 @@ public:
 
   virtual RenderBuffer *GetBuffer() = 0;
   virtual void          SwapBuffers() = 0;
+  virtual const char   *GetThreadName() = 0;
 
   static CVar           vpWidth;
   static CVar           vpHeight;
+  static CVar           vpReload;
 };
 
 extern Renderer *renderer;

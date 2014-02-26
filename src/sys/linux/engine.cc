@@ -8,6 +8,28 @@ static const char *wndTypePool[] = { "windowed", NULL };
 CVar Engine::wndType("wndType", CVAR_INT | CVAR_CONFIG, "windowed", wndTypePool, "Window type");
 
 // -----------------------------------------------------------------------------
+// Converts an XKeySym to a unified, internal keyboard code
+// -----------------------------------------------------------------------------
+KeyButton TranslateKey(const KeySym& sym)
+{
+  switch (sym)
+  {
+    case XK_Escape:    return KEY_ESC;
+    case XK_Shift_L:   return KEY_SHIFT;
+    case XK_Shift_R:   return KEY_SHIFT;
+    case XK_Control_L: return KEY_CTRL;
+    case XK_Control_R: return KEY_CTRL;
+    case XK_space:     return KEY_SPACE;
+    case XK_Return:    return KEY_ENTER;
+    case XK_A:         return KEY_A;
+    case XK_W:         return KEY_W;
+    case XK_S:         return KEY_S;
+    case XK_D:         return KEY_D;
+    default: return KEY_UNDEF;
+  }
+}
+
+// -----------------------------------------------------------------------------
 // Linux implementation of platform-specific things
 // -----------------------------------------------------------------------------
 class EngineImpl : public Engine
@@ -55,15 +77,19 @@ void EngineImpl::Init()
 {
   InitLua();
   InitWindow();
+  world->Init("assets/scripts/test.lua");
   renderer->Init();
-  world->Load("assets/scripts/test.lua");
+  threadMngr->Init();
+  threadMngr->Spawn(renderer);
+  threadMngr->Spawn(world);
 }
 
 // -----------------------------------------------------------------------------
 void EngineImpl::Destroy()
 {
-  world->Unload();
+  threadMngr->Destroy();
   renderer->Destroy();
+  world->Destroy();
   DestroyWindow();
   DestroyLua();
 }
@@ -206,6 +232,7 @@ void EngineImpl::UpdateWindow()
 
   switch (wndType.GetInt())
   {
+    // Windowed mode
     case 0:
     {
       XF86VidModeSwitchToMode(dpy, DefaultScreen(dpy), modes[0]);
@@ -215,14 +242,14 @@ void EngineImpl::UpdateWindow()
       attr.y = attr.y + ((attr.height - wndHeight.GetInt()) >> 1);
       attr.width = wndWidth.GetInt();
       attr.height = wndHeight.GetInt();
-      XMoveResizeWindow(dpy, wnd, attr.x, attr.y, attr.width, attr.height);
 
+      XMoveResizeWindow(dpy, wnd, attr.x, attr.y, attr.width, attr.height);
       Renderer::vpWidth.SetInt(attr.width);
       Renderer::vpHeight.SetInt(attr.height);
+      Renderer::vpReload.SetBool(true);
 
       swa.override_redirect = False;
       XChangeWindowAttributes(dpy, wnd, CWOverrideRedirect, &swa);
-      XMapRaised(dpy, wnd);
       break;
     }
   }
@@ -231,17 +258,20 @@ void EngineImpl::UpdateWindow()
 // -----------------------------------------------------------------------------
 void EngineImpl::Run()
 {
-  XEvent evt;
+  XEvent xevt;
   XWindowAttributes attr;
+  InputEvent event;
 
   int a = 0;
   running = true;
+
+  threadMngr->Start();
   while (running)
   {
     while (XPending(dpy) > 0)
     {
-      XNextEvent(dpy, &evt);
-      switch (evt.type)
+      XNextEvent(dpy, &xevt);
+      switch (xevt.type)
       {
         case ConfigureNotify:
         case ResizeRequest:
@@ -250,11 +280,19 @@ void EngineImpl::Run()
         }
         case ClientMessage:
         {
-          if (evt.xclient.data.l[0] == (int)wndClose)
+          if (xevt.xclient.data.l[0] == (int)wndClose)
           {
             running = false;
             break;
           }
+          break;
+        }
+        case KeyPress:
+        {
+          event.type = EVT_KEYBOARD;
+          event.keyboard.state = true;
+          event.keyboard.key = TranslateKey(XLookupKeysym(&xevt.xkey, 0));
+          world->PostEvent(event);
           break;
         }
       }
@@ -266,11 +304,9 @@ void EngineImpl::Run()
       wndReload.SetBool(false);
     }
 
-    world->Render(renderer->GetBuffer());
-    renderer->Frame();
-    renderer->SwapBuffers();
-    glXSwapBuffers(dpy, wnd);
+    pthread_yield();
   }
+  threadMngr->Stop();
 }
 
 // -----------------------------------------------------------------------------
@@ -306,7 +342,7 @@ int main(int argc, char **argv)
   catch (std::exception& e)
   {
     engine->Destroy();
-    std::cerr << e.what() << std::endl;
+    std::cerr << "[Main]" << e.what() << std::endl;
     return EXIT_FAILURE;
   }
 }

@@ -6,6 +6,7 @@
 // -----------------------------------------------------------------------------
 CVar Renderer::vpWidth("vpWidth", CVAR_INT, "800", "Width of the viewport");
 CVar Renderer::vpHeight("vpHeight", CVAR_INT, "600", "Height of the viewport");
+CVar Renderer::vpReload("vpReload", CVAR_BOOL, "true", "Rebuild buffers");
 
 // -----------------------------------------------------------------------------
 // Implementation of the renderer
@@ -16,10 +17,12 @@ public:
                 RendererImpl();
   void          Init();
   void          Destroy();
+  void          Run();
   void          Frame();
 
   RenderBuffer *GetBuffer();
   void          SwapBuffers();
+  const char   *GetThreadName() { return "renderer"; }
 
 private:
   RenderBuffer buffers[2];
@@ -138,6 +141,12 @@ RenderBuffer *RendererImpl::GetBuffer()
 
 // -----------------------------------------------------------------------------
 void RendererImpl::SwapBuffers()
+{
+
+}
+
+// -----------------------------------------------------------------------------
+void RendererImpl::Run()
 {
 
 }

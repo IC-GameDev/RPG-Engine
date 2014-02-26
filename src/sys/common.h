@@ -1,8 +1,8 @@
 // This file is part of the :(){ :|:& };:'s project
 // Licensing information can be found in the LICENSE file
 // (C) 2014 :(){ :|:& };:. All rights reserved.
-#ifndef __ENGINE_COMMON_H__
-#define __ENGINE_COMMON_H__
+#ifndef __SYS_COMMON_H__
+#define __SYS_COMMON_H__
 
 #define _USE_MATH_DEFINES
 #define GLM_FORCE_RADIANS
@@ -17,11 +17,11 @@
 # include <iostream>
 # include <map>
 # include <set>
+# include <queue>
 # include <sstream>
 # include <vector>
 // Dependencies
 # include <lua.hpp>
-# include <rapidjson/rapidjson.h>
 # include <GL/glew.h>
 # include <glm/glm.hpp>
 # include <glm/ext.hpp>
@@ -29,9 +29,12 @@
 # include "core/exception.h"
 # include "core/hashmap.h"
 # include "core/quadtree.h"
+# include "core/queue.h"
 # include "core/lua.h"
 # include "sys/cvar.h"
+# include "sys/event.h"
 # include "sys/engine.h"
+# include "sys/threads.h"
 # include "renderer/buffer.h"
 # include "renderer/meshmngr.h"
 # include "renderer/program.h"
@@ -52,6 +55,9 @@
 #   include <X11/Xutil.h>
 #   include <X11/extensions/xf86vmode.h>
 #   include <GL/glx.h>
+#   include <unistd.h>
+#   include <pthread.h>
+#   include <errno.h>
 # elif defined(R_MAC)
 # else
 #   error "Undefined platform"
