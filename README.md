@@ -32,4 +32,8 @@ Makefiles:
 4) make
 
 Ninja:
---TODO--
+1) Get ninja from [here](http://martine.github.io/ninja/)
+2) mkdir build
+3) cd build
+4) cmake .. -GNinja
+5) ninja
