@@ -30,8 +30,35 @@ foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
 endforeach()
 
 # Dependencies
+include_directories(${CMAKE_SOURCE_DIR}/src)
+set(DEPENDENCIES_DIR "./dependencies/" CACHE STRING "Directory to an extracted dependencies package")
+    
+# OpenGL
 find_package(OpenGL REQUIRED)
-include_directories(${CMAKE_SOURCE_DIR})
+if (WIN32)
+    # GLEW
+    set(GLEW_USE_STATIC_LIBS ON)   
+    set(GLEW_ROOT_DIR "${DEPENDENCIES_DIR}/glew")
+    find_package(GLEW REQUIRED)
+    add_definitions(${GLEW_DEFINITIONS})
+
+    # GLM
+    set(GLM_ROOT_DIR "${DEPENDENCIES_DIR}/glm")
+    find_package(GLM REQUIRED)
+
+    # Lua
+    set(LUA_DIR "${DEPENDENCIES_DIR}/lua")
+    find_package(Lua REQUIRED)
+
+    # RapidJSON
+    set(RAPIDJSON_ROOT_DIR "${DEPENDENCIES_DIR}/rapidjson")
+    find_package(rapidjson REQUIRED)
+
+    set(INCLUDES ${GLEW_INCLUDE_DIR} ${GLM_INCLUDE_DIR} ${LUA_INCLUDE_DIR} ${RAPIDJSON_INCLUDE_DIR})
+    set(LIBS ${GLEW_LIBRARIES} ${LUA_LIBRARIES})
+endif()
+set(INCLUDES ${INCLUDES} ${OPENGL_INCLUDE_DIR})
+set(LIBS ${LIBS} ${OPENGL_LIBRARIES})
 
 # Game logic & entity system
 file(GLOB GAME_SOURCES "src/game/*.cc")
@@ -86,8 +113,24 @@ set(HEADERS ${HEADERS} ${SYS_HEADERS} ${SYS_PLATFORM_HEADERS})
 source_group(sys FILES ${SYS_SOURCES} ${SYS_HEADERS})
 source_group(sys\\platform FILES ${SYS_PLATFORM_SOURCES} ${SYS_PLATFORM_HEADERS})
 
+# Create vcproj.user file for Visual Studio to set up working directory
+# when running from the IDE
+function(create_vcproj_userfile TARGETNAME)
+  if(MSVC)
+    configure_file(
+          ${CMAKE_CURRENT_SOURCE_DIR}/CMake/Templates/VisualStudioUserFile.vcproj.user.in
+          ${CMAKE_CURRENT_BINARY_DIR}/${TARGETNAME}.vcproj.user
+          @ONLY)
+    configure_file(
+          ${CMAKE_CURRENT_SOURCE_DIR}/CMake/Templates/VisualStudioUserFile.vcxproj.user.in
+          ${CMAKE_CURRENT_BINARY_DIR}/${TARGETNAME}.vcxproj.user
+          @ONLY)
+  endif()
+endfunction(create_vcproj_userfile)
+
 # Compiler specifics
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+if(MSVC)
+    add_definitions(-D_SCL_SECURE_NO_WARNINGS)
     add_definitions(-DR_VCC)
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     add_definitions(-DR_GCC)
@@ -101,3 +144,4 @@ endif()
 include_directories(${INCLUDES})
 add_executable(rpg ${FLAGS} ${SOURCES} ${HEADERS})
 target_link_libraries(rpg ${LIBS})
+create_vcproj_userfile(rpg)

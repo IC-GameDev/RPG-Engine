@@ -7,7 +7,6 @@
 #define _USE_MATH_DEFINES
 #define GLM_FORCE_RADIANS
 
-#ifdef __cplusplus
 // Standard C
 # include <cmath>
 # include <cstdio>
@@ -21,7 +20,6 @@
 # include <sstream>
 # include <vector>
 // Dependencies
-# include <png.h>
 # include <lua.hpp>
 # include <rapidjson/rapidjson.h>
 # include <GL/glew.h>
@@ -58,12 +56,5 @@
 # else
 #   error "Undefined platform"
 # endif
-
-#else
-// Standard C
-# include <math.h>
-# include <stdio.h>
-# include <stdlib.h>
-#endif
 
 #endif /*__ENGINE_COMMON_H__*/

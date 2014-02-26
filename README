@@ -1,7 +1,22 @@
+Windows
+--------------
+1) Download the dependencies package from: http://blahblah.com
+2) Extract the contents of the dependencies package to the dependencies folder
+3) Download and install CMake from here: 
+4) Open CMake and set the source directory to the folder containing
+   the CMakeLists.txt file, and set the output directory to a subfolder called build.
+   For example:
+      Source: C:\Work\rpg
+      Output: C:\Work\rpg\build
+5) Click Generate and select which C++ compiler you're using:
+      Visual Studio 2010 = Visual Studio 10
+      Visual Studio 2012 = Visual Studio 11
+      Visual Studio 2013 = Visual Studio 12
+6) Navigate to the build directory and open the generated SLN file.
+
 
 Linux
------
-
+--------------
 Install dependencies: lua, glm, glew, rapidjson
 
   mkdir build

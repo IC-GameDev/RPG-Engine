@@ -7,30 +7,33 @@
 static const char *wndTypePool[] = { "windowed", "fullscreen", "windowed_fs" };
 CVar Engine::wndType("wndType", CVAR_INT | CVAR_CONFIG, "windowed", wndTypePool, "Window type");
 
+#define ID_ICON_ENGINE 0
+
 // -----------------------------------------------------------------------------
 // Windows implementation of platform-specific features
 // -----------------------------------------------------------------------------
 class EngineImpl : public Engine
 {
 public:
-           EngineImpl();
+                        EngineImpl();
 
-  void     Init();
-  void     Run();
-  void     Destroy();
+  void                  Init();
+  void                  Run();
+  void                  Destroy();
+  uint64_t              GetTime();
 
 private:
   static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-  void     InitWindow();
-  void     UpdateWindow();
-  void     DestroyWindow();
+  void                  InitWindow();
+  void                  UpdateWindow();
+  void                  DestroyWindow();
 
-  HINSTANCE   inst;
-  HWND        window;
-  HDC         device;
-  HGLRC       context;
-  bool        fullscreen;
+  HINSTANCE             inst;
+  HWND                  window;
+  HDC                   device;
+  HGLRC                 context;
+  bool                  fullscreen;
 };
 
 // -----------------------------------------------------------------------------
@@ -98,7 +101,6 @@ void EngineImpl::Destroy()
 void EngineImpl::InitWindow()
 {
   PIXELFORMATDESCRIPTOR pfd;
-  UINT formatCount;
   WNDCLASSEX wc;
   int pixelFormat;
 
@@ -126,7 +128,7 @@ void EngineImpl::InitWindow()
   }
 
   // Create the actual window
-  if (!(window = CreateWindowEx(0, "vkEngine", "", WS_SYSMENU,
+  if (!(window = CreateWindowEx(0, wc.lpszClassName, "", WS_SYSMENU,
                                 0, 0, 0, 0, 0, 0, inst, this)))
   {
     EXCEPT << "Cannot create window";
@@ -145,12 +147,12 @@ void EngineImpl::InitWindow()
   pfd.cColorBits = 32;
   pfd.iLayerType = PFD_MAIN_PLANE;
 
-  if (!(dummyFormat = ChoosePixelFormat(device, &pfd)))
+  if (!(pixelFormat = ChoosePixelFormat(device, &pfd)))
   {
     EXCEPT << "[Engine] Cannot choose pixel format";
   }
 
-  if (!SetPixelFormat(device, dummyFormat, &pfd))
+  if (!SetPixelFormat(device, pixelFormat, &pfd))
   {
     EXCEPT << "[Engine] Cannot set pixel format";
   }
@@ -161,7 +163,7 @@ void EngineImpl::InitWindow()
   }
 
   wglMakeCurrent(device, context);
-  if (glewInit() != GLEW_OKAY)
+  if (glewInit() != GLEW_OK)
   {
     EXCEPT << "[Engine] Cannot link GL extensions";
   }
@@ -195,7 +197,6 @@ void EngineImpl::DestroyWindow()
 
     ShowWindow(window, SW_HIDE);
     CloseWindow(window);
-    DestroyWindow(window);
     window = NULL;
   }
 
@@ -278,7 +279,7 @@ void EngineImpl::UpdateWindow()
 
       if (ChangeDisplaySettings(&ss, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
       {
-        throw vkException("[Engine] Cannot switch to fullscreen");
+        EXCEPT << "Cannot switch to fullscreen";
       }
       break;
     }
@@ -288,7 +289,7 @@ void EngineImpl::UpdateWindow()
 
   SetWindowLongPtr(window, GWL_STYLE, style);
   SetWindowLongPtr(window, GWL_EXSTYLE, exStyle);
-  SetWindowText(window, wndTitle.GetString());
+  SetWindowText(window, wndTitle.GetString().c_str());
   SetWindowPos(window, NULL, r.left, r.top,
                r.right - r.left, r.bottom - r.top,
                SWP_SHOWWINDOW);
@@ -319,6 +320,24 @@ void EngineImpl::Run()
   }
 }
 
+uint64_t EngineImpl::GetTime()
+{
+  LARGE_INTEGER t;
+  static double frequencyToNanoseconds;
+  static bool initialized = false;
+
+  if (!initialized)
+  {
+    LARGE_INTEGER performanceFrequency;
+    initialized = true;
+    QueryPerformanceFrequency(&performanceFrequency);
+    frequencyToNanoseconds = (double)performanceFrequency.QuadPart / 100.0;
+  }
+
+  QueryPerformanceCounter(&t);
+  return static_cast<uint64_t>(t.QuadPart / frequencyToNanoseconds);
+}
+
 // -----------------------------------------------------------------------------
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -333,6 +352,7 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   {
     engine->Destroy();
     std::cerr << e.what() << std::endl;
+    MessageBoxA(NULL, e.what(), "Error!", MB_ICONERROR | MB_OK);
     return EXIT_FAILURE;
   }
 }

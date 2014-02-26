@@ -1,10 +1,17 @@
+# Dependencies
+dependencies/
+!dependencies/README
 
 # Sublime
 *sublime*
 
-# Gyp & ninja
-out/
+# Build dir
 build/
+
+# Win32 output
+*.exe
+*.pdb
+*.ilk
 
 # Compiled Object files
 *.slo
