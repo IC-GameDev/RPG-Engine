@@ -1,6 +1,6 @@
 Windows
 --------------
-1) Download the dependencies package from: https://dl.dropboxusercontent.com/u/1490400/dawn-dependencies.tar.gz
+1) Download the dependencies package from: https://dl.dropboxusercontent.com/u/1490400/rpg-dependencies.zip
 2) Extract the contents of the dependencies package to the dependencies folder
 3) Download and install CMake from here: http://www.cmake.org/cmake/resources/software.html
 4) Open CMake and set the source directory to the folder containing
