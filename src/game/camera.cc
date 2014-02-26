@@ -21,7 +21,8 @@ const glm::mat4& Camera::GetView()
 {
   if (dirty)
   {
-    viewMatrix = glm::lookAt(position, position + direction, up);
+    Compute();
+    dirty = false;
   }
 
   return viewMatrix;
@@ -32,9 +33,66 @@ const glm::mat4& Camera::GetProj()
 {
   if (dirty || Renderer::vpReload.IsModified())
   {
-    aspect = Renderer::vpWidth.GetFloat() / Renderer::vpHeight.GetFloat();
-    projMatrix = glm::perspective(fov, aspect, nearPlane, farPlane);
+    Compute();
+    dirty = false;
   }
 
   return projMatrix;
+}
+
+// -----------------------------------------------------------------------------
+void Camera::Compute()
+{
+  viewMatrix = glm::lookAt(position, position + direction, up);
+  aspect = Renderer::vpWidth.GetFloat() / Renderer::vpHeight.GetFloat();
+  projMatrix = glm::perspective(fov, aspect, nearPlane, farPlane);
+}
+
+// -----------------------------------------------------------------------------
+CameraTopDown::CameraTopDown()
+  : center(0.0f)
+  , offset(10.0f, 10.0f, 10.0f)
+  , speed(0.00001f)
+{
+
+}
+
+// -----------------------------------------------------------------------------
+void CameraTopDown::Move(const Direction& dir, bool start)
+{
+  moveDir = start ? (moveDir | dir) : (moveDir & (~dir));
+}
+
+// -----------------------------------------------------------------------------
+void CameraTopDown::Update(float delta)
+{
+  glm::vec3 move(0.0f);
+
+  // Cumulate move directions
+  if (moveDir & UP)
+  {
+    move += glm::vec3(1.0f, 0.0f, 1.0f);
+  }
+  if (moveDir & DOWN)
+  {
+    move -= glm::vec3(1.0f, 0.0f, 1.0f);
+  }
+  if (moveDir & RIGHT)
+  {
+    move += glm::vec3(-1.0f, 0.0f, 1.0f);
+  }
+  if (moveDir & LEFT)
+  {
+    move -= glm::vec3(-1.0f, 0.0f, 1.0f);
+  }
+
+  // Normalize & multiply with speed
+  if (glm::length(move) > 0.01f)
+  {
+    center += glm::normalize(move) * delta * speed;
+  }
+
+  dirty = true;
+  position = center + offset;
+  direction = glm::normalize(-offset);
 }

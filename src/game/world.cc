@@ -14,15 +14,22 @@ public:
   void          Run();
   void          Destroy();
   void          Render(RenderBuffer *buffer);
-  void          PostEvent(const InputEvent& evt);
+
   const char   *GetThreadName() { return "world"; }
+  void          PostEvent(const InputEvent& evt) { queue.Push(evt); }
 
 private:
-  void          HandleEvent(const InputEvent& evt);
+  void          HandleKeyEvent(const KeyboardEvent& evt);
+  void          HandleMouseEvent(const MouseEvent& evt);
+  void          HandleNetworkEvent(const NetworkEvent& evt);
 
+  // System stuff
   lua_State                   *L;
   AsyncQueue<InputEvent, 128>  queue;
   RenderBuffer                *buffer;
+
+  // Actual game state
+  CameraTopDown                camera;
 };
 
 // -----------------------------------------------------------------------------
@@ -106,6 +113,10 @@ void WorldImpl::Render(RenderBuffer *buffer)
 void WorldImpl::Run()
 {
   InputEvent event;
+  uint64_t lastFrame, thisFrame;
+  float delta = 0.0f;
+
+  lastFrame = thisFrame = engine->GetTime();
   while (threadMngr->IsRunning())
   {
     while (!queue.Empty())
@@ -114,30 +125,75 @@ void WorldImpl::Run()
       {
         case EVT_KEYBOARD:
         {
+          HandleKeyEvent(event.keyboard);
           break;
         }
-        case EVT_POINTER:
+        case EVT_MOUSE:
         {
+          HandleMouseEvent(event.mouse);
           break;
         }
         case EVT_NETWORK:
         {
+          HandleNetworkEvent(event.network);
           break;
         }
       }
     }
 
+    // Update some stuff
+    camera.Update(delta);
+
+    // Send data to renderer
     buffer = renderer->SwapBuffers();
+    buffer->camProj = camera.GetProj();
+    buffer->camView = camera.GetView();
+
+    // Update timers
+    lastFrame = thisFrame;
+    thisFrame = engine->GetTime();
+    delta = (thisFrame - lastFrame) / 1000.0f;
   }
 }
 
 // -----------------------------------------------------------------------------
-void WorldImpl::PostEvent(const InputEvent& event)
+void WorldImpl::HandleKeyEvent(const KeyboardEvent& evt)
 {
-  queue.Push(event);
+  switch (evt.key)
+  {
+    case KEY_A:
+    {
+      camera.Move(CameraTopDown::LEFT, evt.state);
+      break;
+    }
+    case KEY_W:
+    {
+      camera.Move(CameraTopDown::UP, evt.state);
+      break;
+    }
+    case KEY_S:
+    {
+      camera.Move(CameraTopDown::DOWN, evt.state);
+      break;
+    }
+    case KEY_D:
+    {
+      camera.Move(CameraTopDown::RIGHT, evt.state);
+      break;
+    }
+    default:
+    {
+      break;
+    }
+  }
 }
 
 // -----------------------------------------------------------------------------
-void WorldImpl::HandleEvent(const InputEvent& event)
+void WorldImpl::HandleMouseEvent(const MouseEvent& evt)
+{
+}
+
+// -----------------------------------------------------------------------------
+void WorldImpl::HandleNetworkEvent(const NetworkEvent& evt)
 {
 }

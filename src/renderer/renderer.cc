@@ -50,6 +50,8 @@ Renderer *renderer = &rendererImpl;
 
 // -----------------------------------------------------------------------------
 RendererImpl::RendererImpl()
+  : bufferIndex(0)
+  , buffer(&buffers[0])
 {
   memset(programs, 0, sizeof(programs));
   memset(textures, 0, sizeof(textures));
@@ -120,6 +122,7 @@ void RendererImpl::Frame()
 
   glViewport(0, 0, vpWidth.GetInt(), vpHeight.GetInt());
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  vpReload.ClearModified();
 
   p_terrain->Bind();
   p_terrain->Uniform("u_proj", buffer->camProj);

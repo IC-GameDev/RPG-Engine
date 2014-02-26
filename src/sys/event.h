@@ -9,7 +9,7 @@
 // -----------------------------------------------------------------------------
 enum EventType
 {
-  EVT_POINTER,
+  EVT_MOUSE,
   EVT_KEYBOARD,
   EVT_NETWORK
 };

@@ -21,10 +21,10 @@ KeyButton TranslateKey(const KeySym& sym)
     case XK_Control_R: return KEY_CTRL;
     case XK_space:     return KEY_SPACE;
     case XK_Return:    return KEY_ENTER;
-    case XK_A:         return KEY_A;
-    case XK_W:         return KEY_W;
-    case XK_S:         return KEY_S;
-    case XK_D:         return KEY_D;
+    case XK_a:         return KEY_A;
+    case XK_w:         return KEY_W;
+    case XK_s:         return KEY_S;
+    case XK_d:         return KEY_D;
     default:           return KEY_UNDEF;
   }
 }
@@ -137,8 +137,10 @@ void EngineImpl::InitWindow()
   XSetWindowAttributes swa;
   swa.border_pixel = 0;
   swa.colormap = colormap;
-  swa.event_mask = ExposureMask | KeyPressMask |
-                   ButtonPressMask |StructureNotifyMask;
+  swa.event_mask = ExposureMask |
+                   KeyPressMask | KeyReleaseMask |
+                   ButtonPressMask | ButtonReleaseMask |
+                   StructureNotifyMask;
   if (!(wnd = XCreateWindow(dpy, root, 0, 0,
                             wndWidth.GetInt(), wndHeight.GetInt(),
                             0, vi->depth, InputOutput, vi->visual,
@@ -291,6 +293,14 @@ void EngineImpl::Run()
         {
           event.type = EVT_KEYBOARD;
           event.keyboard.state = true;
+          event.keyboard.key = TranslateKey(XLookupKeysym(&xevt.xkey, 0));
+          world->PostEvent(event);
+          break;
+        }
+        case KeyRelease:
+        {
+          event.type = EVT_KEYBOARD;
+          event.keyboard.state = false;
           event.keyboard.key = TranslateKey(XLookupKeysym(&xevt.xkey, 0));
           world->PostEvent(event);
           break;
