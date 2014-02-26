@@ -16,6 +16,16 @@ public:
 
 // -----------------------------------------------------------------------------
 // This class keeps track of all the threads in the engine
+// The workload is divided between multiple threads:
+//  - [main]: the thread spawned by the OS and the rendering context is
+//                 bound to it. Xlib/Win32 events are also polled from here
+//  - [world]: this thread handles game logic, receives messages from
+//                  other threads through a lockless queue
+//  - [network]: listens for network messages, propagates messages
+//                       that are sent to it from other threads
+//  - [rsmngr]: NOT IMPLEMENTED - tracks resource usage
+//  - [pool #n]: NOT IMPLEMENTED - additional cores run threads that process
+//               small jobs
 // -----------------------------------------------------------------------------
 class ThreadMngr
 {
@@ -28,6 +38,7 @@ public:
   virtual bool IsRunning() = 0;
 };
 
+// -----------------------------------------------------------------------------
 extern ThreadMngr *threadMngr;
 
 #endif

@@ -26,6 +26,7 @@
 # include <glm/glm.hpp>
 # include <glm/ext.hpp>
 // Our headers
+# include "core/concurrent.h"
 # include "core/exception.h"
 # include "core/hashmap.h"
 # include "core/quadtree.h"
@@ -33,8 +34,9 @@
 # include "core/lua.h"
 # include "sys/cvar.h"
 # include "sys/event.h"
-# include "sys/engine.h"
 # include "sys/threads.h"
+# include "sys/engine.h"
+# include "sys/network.h"
 # include "renderer/buffer.h"
 # include "renderer/meshmngr.h"
 # include "renderer/program.h"

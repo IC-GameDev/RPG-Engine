@@ -25,7 +25,7 @@ KeyButton TranslateKey(const KeySym& sym)
     case XK_W:         return KEY_W;
     case XK_S:         return KEY_S;
     case XK_D:         return KEY_D;
-    default: return KEY_UNDEF;
+    default:           return KEY_UNDEF;
   }
 }
 
@@ -80,8 +80,8 @@ void EngineImpl::Init()
   world->Init("assets/scripts/test.lua");
   renderer->Init();
   threadMngr->Init();
-  threadMngr->Spawn(renderer);
   threadMngr->Spawn(world);
+  threadMngr->Spawn(network);
 }
 
 // -----------------------------------------------------------------------------
@@ -304,8 +304,10 @@ void EngineImpl::Run()
       wndReload.SetBool(false);
     }
 
-    pthread_yield();
+    renderer->Frame();
+    glXSwapBuffers(dpy, wnd);
   }
+
   threadMngr->Stop();
 }
 

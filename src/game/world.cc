@@ -21,7 +21,8 @@ private:
   void          HandleEvent(const InputEvent& evt);
 
   lua_State                   *L;
-  AsyncQueue<InputEvent, 100>  queue;
+  AsyncQueue<InputEvent, 128>  queue;
+  RenderBuffer                *buffer;
 };
 
 // -----------------------------------------------------------------------------
@@ -33,6 +34,7 @@ World *world = &worldImpl;
 // -----------------------------------------------------------------------------
 WorldImpl::WorldImpl()
   : L(NULL)
+  , buffer(NULL)
 {
 }
 
@@ -112,11 +114,20 @@ void WorldImpl::Run()
       {
         case EVT_KEYBOARD:
         {
-          std::cout << "KeyEvent" << std::endl;
+          break;
+        }
+        case EVT_POINTER:
+        {
+          break;
+        }
+        case EVT_NETWORK:
+        {
           break;
         }
       }
     }
+
+    buffer = renderer->SwapBuffers();
   }
 }
 

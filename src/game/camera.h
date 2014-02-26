@@ -7,10 +7,24 @@
 class Camera
 {
 public:
-  Camera();
+           Camera();
+  virtual ~Camera() { }
+
+  const glm::mat4&    GetView();
+  const glm::mat4&    GetProj();
 
 private:
-  
+  glm::vec3           position;
+  glm::vec3           direction;
+  glm::vec3           up;
+  float               fov;
+  float               nearPlane;
+  float               farPlane;
+
+  mutable bool        dirty;
+  mutable float       aspect;
+  mutable glm::mat4   viewMatrix;
+  mutable glm::mat4   projMatrix;
 };
 
 #endif /*__ENGINE_CAMERA_H__*/

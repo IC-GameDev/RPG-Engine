@@ -8,6 +8,9 @@ dependencies/
 # Build dir
 build/
 
+# Executable
+bin/rpg
+
 # Win32 output
 *.exe
 *.pdb

@@ -20,13 +20,14 @@ public:
   void          Run();
   void          Frame();
 
-  RenderBuffer *GetBuffer();
-  void          SwapBuffers();
-  const char   *GetThreadName() { return "renderer"; }
+  RenderBuffer *SwapBuffers();
 
 private:
-  RenderBuffer buffers[2];
+  size_t        bufferIndex;
+  RenderBuffer  buffers[2];
   RenderBuffer *buffer;
+  Mutex         bufferLock;
+
   union
   {
     Program *programs[4];
@@ -115,6 +116,8 @@ void RendererImpl::Destroy()
 // -----------------------------------------------------------------------------
 void RendererImpl::Frame()
 {
+  bufferLock.Lock();
+
   glViewport(0, 0, vpWidth.GetInt(), vpHeight.GetInt());
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -130,23 +133,22 @@ void RendererImpl::Frame()
     glVertex3f(0.0f, 1.0f, 0.0f);
     glVertex3f(1.0f, 1.0f, 0.0f);
   glEnd();
+
+  bufferLock.Unlock();
 }
 
 // -----------------------------------------------------------------------------
-RenderBuffer *RendererImpl::GetBuffer()
+RenderBuffer *RendererImpl::SwapBuffers()
 {
-  buffers[0].terrain.clear();
-  return &buffers[0];
-}
+  RenderBuffer *other;
 
-// -----------------------------------------------------------------------------
-void RendererImpl::SwapBuffers()
-{
+  bufferLock.Lock();
 
-}
+  bufferIndex = (bufferIndex + 1) & 1;
+  buffer = &buffers[bufferIndex];
+  other = &buffers[(bufferIndex + 1) & 1];
+  other->Clear();
 
-// -----------------------------------------------------------------------------
-void RendererImpl::Run()
-{
-
+  bufferLock.Unlock();
+  return other;
 }

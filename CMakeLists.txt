@@ -137,7 +137,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     add_definitions(-DR_CLANG)
-    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
+    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-g -march=nocona")
 endif()
 
 # Executable

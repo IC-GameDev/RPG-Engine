@@ -14,7 +14,6 @@ public:
   virtual void        Destroy() = 0;
   virtual void        Render(RenderBuffer *buffer) = 0;
   virtual void        PostEvent(const InputEvent& event) = 0;
-  virtual const char *GetThreadName() = 0;
 };
 
 extern World *world;

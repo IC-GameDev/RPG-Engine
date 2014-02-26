@@ -10,11 +10,11 @@
 class Engine
 {
 public:
-  virtual void      Init()    = 0;
-  virtual void      Run()     = 0;
-  virtual void      Destroy() = 0;
-  virtual uint64_t  GetTime() = 0;
-  virtual void      Quit() { running = false; }
+  virtual void        Init()     = 0;
+  virtual void        Run()      = 0;
+  virtual void        Destroy()  = 0;
+  virtual uint64_t    GetTime()  = 0;
+  virtual void        Quit() { running = false; }
 
   static CVar       wndWidth;
   static CVar       wndHeight;

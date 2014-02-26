@@ -22,15 +22,25 @@ public:
     : head(0)
     , tail(0)
   {
+    assert(Capacity & (Capacity - 1) == 0);
   }
 
   // Adds an element to the end of the queue (called from producer)
   void Push(const T& elem)
   {
-    while ((head + 1) % Capacity == tail);
+    size_t head_;
+    while (BranchPredict(tail + Capacity <= head, 0))
+    {
+      Yield();
+    }
 
-    data[head] = elem;
-    head = (head + 1) % Capacity;
+    head_ = AtomicIncrement(&head);
+    while (BranchPredict(tail + Capacity <= head_, 0))
+    {
+      Yield();
+    }
+
+    data[head_ & (Capacity - 1)] = elem;
   }
 
   // Removes an element from the front of the queue (called from consumer)
@@ -38,24 +48,25 @@ public:
   {
     T temp;
 
-    while (head == tail);
+    while (BranchPredict(head <= tail, 0))
+    {
+      Yield();
+    }
 
-    temp = data[tail];
-    tail = (tail + 1) % Capacity;
-
+    temp = data[(tail++) & (Capacity - 1)];
     return temp;
   }
 
-  // Returns the number of elements in the queue
+  // Returns the number of elements inside the queu
   size_t Size()
   {
-    return head > tail ? (head - tail) : (Capacity - tail + head);
+    return head - tail;
   }
 
   // Checks whether the queue is empty
   bool Empty()
   {
-    return head == tail;
+    return head <= tail;
   }
 
 private:

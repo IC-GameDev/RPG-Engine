@@ -1,48 +1,36 @@
 // This file is part of the :(){ :|:& };:'s project
 // Licensing information can be found in the LICENSE file
 // (C) 2014 :(){ :|:& };:. All rights reserved.
-#ifndef __RENDERER_BUFFER_H__
-#define __RENDERER_BUFFER_H__
+#include "sys/common.h"
 
 // -----------------------------------------------------------------------------
-//
+// Linux-specific implementation of the networking subsystem
 // -----------------------------------------------------------------------------
-struct RBTerrain
+class NetworkImpl : public Network
 {
-  glm::mat4    local;
-  float       *data;
-  uint64_t     hash;
+public:
+  void          Init();
+  void          Run();
+  void          Destroy();
+  const char   *GetThreadName() { return "network"; }
 };
 
+
 // -----------------------------------------------------------------------------
-//
+static NetworkImpl networkImpl;
+Network *network = &networkImpl;
+
 // -----------------------------------------------------------------------------
-struct RBMesh
+void NetworkImpl::Init()
 {
-
-};
+}
 
 // -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-struct RBLight
+void NetworkImpl::Run()
 {
-
-};
+}
 
 // -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-struct RenderBuffer
+void NetworkImpl::Destroy()
 {
-  glm::mat4 camProj;
-  glm::mat4 camView;
-  std::vector<RBTerrain> terrain;
-
-  void Clear()
-  {
-    terrain.clear();
-  }
-};
-
-#endif /*__RENDERER_BUFFER_H__*/
+}
