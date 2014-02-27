@@ -13,7 +13,6 @@ public:
   void          Init(const std::string& file);
   void          Run();
   void          Destroy();
-  void          Render(RenderBuffer *buffer);
 
   const char   *GetThreadName() { return "world"; }
   void          PostEvent(const InputEvent& evt) { queue.Push(evt); }
@@ -24,12 +23,13 @@ private:
   void          HandleNetworkEvent(const NetworkEvent& evt);
 
   // System stuff
-  lua_State                   *L;
-  AsyncQueue<InputEvent, 128>  queue;
-  RenderBuffer                *buffer;
+  lua_State                      *L;
+  AsyncQueue<InputEvent, 128>     queue;
+  rbBuffer_t                     *buffer;
 
   // Actual game state
-  CameraTopDown                camera;
+  CameraTopDown                   camera;
+  Level                           level;
 };
 
 // -----------------------------------------------------------------------------
@@ -42,6 +42,7 @@ World *world = &worldImpl;
 WorldImpl::WorldImpl()
   : L(NULL)
   , buffer(NULL)
+  , level(0, "test", "./save/")
 {
 }
 
@@ -90,7 +91,7 @@ void WorldImpl::Destroy()
   }
 }
 
-float data[] =
+static float data[] =
 {
   0.0f, 0.0f, 0.0f,
   0.0f, 1.0f, 0.0f,
@@ -99,15 +100,6 @@ float data[] =
   0.0f, 1.0f, 0.0f,
   1.0f, 1.0f, 0.0f
 };
-
-// -----------------------------------------------------------------------------
-void WorldImpl::Render(RenderBuffer *buffer)
-{
-  RBTerrain chunk;
-  chunk.data = data;
-  chunk.local = glm::mat4(1.0f);
-  buffer->terrain.push_back(chunk);
-}
 
 // -----------------------------------------------------------------------------
 void WorldImpl::Run()
@@ -141,13 +133,17 @@ void WorldImpl::Run()
       }
     }
 
-    // Update some stuff
-    camera.Update(delta);
-
     // Send data to renderer
     buffer = renderer->SwapBuffers();
     buffer->camProj = camera.GetProj();
     buffer->camView = camera.GetView();
+
+    // Process feedback from the renderer
+    level.Feedback(buffer);
+
+    // Clear the buffer & add new object
+    camera.Update(delta);
+    level.Update(camera, buffer);
 
     // Update timers
     lastFrame = thisFrame;

@@ -20,21 +20,24 @@ public:
   void          Run();
   void          Frame();
 
-  RenderBuffer *SwapBuffers();
+  rbBuffer_t   *SwapBuffers();
 
 private:
+  void          RenderSprite(rbSprite_t *sprite);
+  void          RenderDynMesh(rbDynMesh_t *mesh);
+
   size_t        bufferIndex;
-  RenderBuffer  buffers[2];
-  RenderBuffer *buffer;
+  rbBuffer_t    buffers[2];
+  rbBuffer_t   *buffer;
   Mutex         bufferLock;
 
   union
   {
-    Program *programs[4];
+    Program *programs[2];
     struct
     {
-      Program *p_terrain;
-      Program *p_object;
+      Program *p_sprite;
+      Program *p_dyn_mesh;
     };
   };
 
@@ -73,17 +76,17 @@ void RendererImpl::Init()
   desc[] =
   {
     {
-      "terrain",
+      "sprite",
       {
-        { "assets/shader/terrain.vs.glsl", GL_VERTEX_SHADER },
-        { "assets/shader/terrain.fs.glsl", GL_FRAGMENT_SHADER }
+        { "assets/shader/sprite.vs.glsl", GL_VERTEX_SHADER },
+        { "assets/shader/sprite.fs.glsl", GL_FRAGMENT_SHADER }
       }
     },
     {
-      "object",
+      "dyn_mesh",
       {
-        { "assets/shader/object.vs.glsl", GL_VERTEX_SHADER },
-        { "assets/shader/object.fs.glsl", GL_FRAGMENT_SHADER }
+        { "assets/shader/dyn_mesh.vs.glsl", GL_VERTEX_SHADER },
+        { "assets/shader/dyn_mesh.fs.glsl", GL_FRAGMENT_SHADER }
       }
     }
   };
@@ -124,34 +127,53 @@ void RendererImpl::Frame()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   vpReload.ClearModified();
 
-  p_terrain->Bind();
-  p_terrain->Uniform("u_proj", buffer->camProj);
-  p_terrain->Uniform("u_view", buffer->camView);
+  // Render sprites
+  p_sprite->Bind();
+  p_sprite->Uniform("u_proj", buffer->camProj);
+  p_sprite->Uniform("u_view", buffer->camView);
+  for (size_t i = 0; i < buffer->spriteCount; ++i)
+  {
+    RenderSprite(&buffer->sprite[i]);
+  }
 
-  glBegin(GL_TRIANGLES);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(1.0f, 1.0f, 0.0f);
-  glEnd();
+  // Render dynamic meshes
+  p_dyn_mesh->Bind();
+  p_dyn_mesh->Uniform("u_proj", buffer->camProj);
+  p_dyn_mesh->Uniform("u_view", buffer->camView);
+  for (size_t i = 0; i < buffer->dynMeshCount; ++i)
+  {
+    RenderDynMesh(&buffer->dynMesh[i]);
+  }
 
   bufferLock.Unlock();
 }
 
 // -----------------------------------------------------------------------------
-RenderBuffer *RendererImpl::SwapBuffers()
+rbBuffer_t *RendererImpl::SwapBuffers()
 {
-  RenderBuffer *other;
+  rbBuffer_t *other;
 
   bufferLock.Lock();
 
   bufferIndex = (bufferIndex + 1) & 1;
   buffer = &buffers[bufferIndex];
   other = &buffers[(bufferIndex + 1) & 1];
-  other->Clear();
 
   bufferLock.Unlock();
   return other;
+}
+
+// -----------------------------------------------------------------------------
+void RendererImpl::RenderSprite(rbSprite_t *sprite)
+{
+
+}
+
+// -----------------------------------------------------------------------------
+void RendererImpl::RenderDynMesh(rbDynMesh_t *mesh)
+{
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glVertexPointer(3, GL_FLOAT, 32, mesh->vertData);
+  glDrawArrays(GL_TRIANGLES, 0, mesh->vertCount);
+  glDisableClientState(GL_VERTEX_ARRAY);
 }

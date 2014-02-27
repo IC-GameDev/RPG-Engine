@@ -13,7 +13,7 @@ public:
   virtual void          Init() = 0;
   virtual void          Destroy() = 0;
   virtual void          Frame() = 0;
-  virtual RenderBuffer *SwapBuffers() = 0;
+  virtual rbBuffer_t   *SwapBuffers() = 0;
 
   static CVar           vpWidth;
   static CVar           vpHeight;

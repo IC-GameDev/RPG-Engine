@@ -79,6 +79,7 @@ void EngineImpl::Init()
   InitWindow();
   world->Init("assets/scripts/test.lua");
   renderer->Init();
+  cache->Init();
   threadMngr->Init();
   threadMngr->Spawn(world);
   threadMngr->Spawn(network);
@@ -89,6 +90,7 @@ void EngineImpl::Destroy()
 {
   threadMngr->Destroy();
   renderer->Destroy();
+  cache->Destroy();
   world->Destroy();
   DestroyWindow();
   DestroyLua();
@@ -353,8 +355,8 @@ int main(int argc, char **argv)
   }
   catch (std::exception& e)
   {
-    engine->Destroy();
     std::cerr << "[Main]" << e.what() << std::endl;
+    engine->Destroy();
     return EXIT_FAILURE;
   }
 }

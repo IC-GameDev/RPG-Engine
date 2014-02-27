@@ -71,19 +71,19 @@ void CameraTopDown::Update(float delta)
   // Cumulate move directions
   if (moveDir & UP)
   {
-    move += glm::vec3(1.0f, 0.0f, 1.0f);
+    move -= glm::vec3(1.0f, 0.0f, 1.0f);
   }
   if (moveDir & DOWN)
   {
-    move -= glm::vec3(1.0f, 0.0f, 1.0f);
+    move += glm::vec3(1.0f, 0.0f, 1.0f);
   }
   if (moveDir & RIGHT)
   {
-    move += glm::vec3(-1.0f, 0.0f, 1.0f);
+    move -= glm::vec3(-1.0f, 0.0f, 1.0f);
   }
   if (moveDir & LEFT)
   {
-    move -= glm::vec3(-1.0f, 0.0f, 1.0f);
+    move += glm::vec3(-1.0f, 0.0f, 1.0f);
   }
 
   // Normalize & multiply with speed

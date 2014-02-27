@@ -37,6 +37,7 @@
 # include "sys/threads.h"
 # include "sys/engine.h"
 # include "sys/network.h"
+# include "renderer/cache.h"
 # include "renderer/buffer.h"
 # include "renderer/meshmngr.h"
 # include "renderer/program.h"
