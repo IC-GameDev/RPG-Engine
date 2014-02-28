@@ -29,6 +29,7 @@ typedef struct
   glm::mat4   camProj;
   glm::mat4   camView;
 
+  size_t      index;
   size_t      dynMeshCount;
   size_t      spriteCount;
 

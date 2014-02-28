@@ -12,20 +12,23 @@ class Level;
 class Chunk
 {
 public:
-               Chunk(Level *level_, glm::ivec2 pos_);
-              ~Chunk();
+                   Chunk(Level *level_, glm::ivec2 pos_);
+                  ~Chunk();
 
-  void         Load();
-  void         Save();
-  void         Feedback(rbDynMesh_t *mesh);
-  void         Update(rbDynMesh_t *mesh);
+  void             Load();
+  void             Save();
+  void             Feedback(rbDynMesh_t *mesh);
+  void             Update(rbDynMesh_t *mesh);
+  void             BuildMesh();
 
 private:
-  Level       *level;
-  glm::ivec2   pos;
-  cacheKey_t   cache;
-
-  friend class Level;
+  Level           *level;
+  float           *vertData;
+  float           *heightMap;
+  glm::ivec2       pos;
+  cacheKey_t       cache;
+  friend class     Level;
+  static const int SIZE = 32;
 };
 
 // -----------------------------------------------------------------------------

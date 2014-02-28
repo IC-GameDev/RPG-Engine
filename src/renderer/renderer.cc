@@ -26,10 +26,11 @@ private:
   void          RenderSprite(rbSprite_t *sprite);
   void          RenderDynMesh(rbDynMesh_t *mesh);
 
-  size_t        bufferIndex;
   rbBuffer_t    buffers[2];
-  rbBuffer_t   *buffer;
-  Mutex         bufferLock;
+  rbBuffer_t   *front;
+  rbBuffer_t   *back;
+  Signal       *frontSignal;
+  Signal       *backSignal;
 
   union
   {
@@ -53,17 +54,21 @@ Renderer *renderer = &rendererImpl;
 
 // -----------------------------------------------------------------------------
 RendererImpl::RendererImpl()
-  : bufferIndex(0)
-  , buffer(&buffers[0])
+  : front(&buffers[0])
+  , back(&buffers[1])
 {
   memset(programs, 0, sizeof(programs));
   memset(textures, 0, sizeof(textures));
-  buffer = &buffers[0];
+  buffers[0].index = 0;
+  buffers[1].index = 1;
 }
 
 // -----------------------------------------------------------------------------
 void RendererImpl::Init()
 {
+  frontSignal = threadMngr->CreateSignal();
+  backSignal = threadMngr->CreateSignal();
+
   struct
   {
     const char *name;
@@ -121,7 +126,7 @@ void RendererImpl::Destroy()
 // -----------------------------------------------------------------------------
 void RendererImpl::Frame()
 {
-  bufferLock.Lock();
+  backSignal->Wait();
 
   glViewport(0, 0, vpWidth.GetInt(), vpHeight.GetInt());
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -129,38 +134,39 @@ void RendererImpl::Frame()
 
   // Render sprites
   p_sprite->Bind();
-  p_sprite->Uniform("u_proj", buffer->camProj);
-  p_sprite->Uniform("u_view", buffer->camView);
-  for (size_t i = 0; i < buffer->spriteCount; ++i)
+  p_sprite->Uniform("u_proj", front->camProj);
+  p_sprite->Uniform("u_view", front->camView);
+  for (size_t i = 0; i < front->spriteCount; ++i)
   {
-    RenderSprite(&buffer->sprite[i]);
+    RenderSprite(&front->sprite[i]);
   }
 
   // Render dynamic meshes
   p_dyn_mesh->Bind();
-  p_dyn_mesh->Uniform("u_proj", buffer->camProj);
-  p_dyn_mesh->Uniform("u_view", buffer->camView);
-  for (size_t i = 0; i < buffer->dynMeshCount; ++i)
+  p_dyn_mesh->Uniform("u_proj", front->camProj);
+  p_dyn_mesh->Uniform("u_view", front->camView);
+  for (size_t i = 0; i < front->dynMeshCount; ++i)
   {
-    RenderDynMesh(&buffer->dynMesh[i]);
+    RenderDynMesh(&front->dynMesh[i]);
   }
 
-  bufferLock.Unlock();
+  frontSignal->Notify();
 }
 
 // -----------------------------------------------------------------------------
 rbBuffer_t *RendererImpl::SwapBuffers()
 {
-  rbBuffer_t *other;
+  rbBuffer_t *tmp;
 
-  bufferLock.Lock();
+  frontSignal->Wait();
 
-  bufferIndex = (bufferIndex + 1) & 1;
-  buffer = &buffers[bufferIndex];
-  other = &buffers[(bufferIndex + 1) & 1];
+  tmp = front;
+  front = back;
+  back = tmp;
 
-  bufferLock.Unlock();
-  return other;
+  backSignal->Notify();
+
+  return back;
 }
 
 // -----------------------------------------------------------------------------

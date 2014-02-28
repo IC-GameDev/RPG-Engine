@@ -286,7 +286,7 @@ void EngineImpl::Run()
         {
           if (xevt.xclient.data.l[0] == (int)wndClose)
           {
-            running = false;
+            engine->Quit();
             break;
           }
           break;
@@ -310,14 +310,17 @@ void EngineImpl::Run()
       }
     }
 
-    if (wndReload.GetBool())
+    if (engine->IsRunning())
     {
-      UpdateWindow();
-      wndReload.SetBool(false);
-    }
+      if (wndReload.GetBool())
+      {
+        UpdateWindow();
+        wndReload.SetBool(false);
+      }
 
-    renderer->Frame();
-    glXSwapBuffers(dpy, wnd);
+      renderer->Frame();
+      glXSwapBuffers(dpy, wnd);
+    }
   }
 
   threadMngr->Stop();

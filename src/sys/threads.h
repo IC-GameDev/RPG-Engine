@@ -15,6 +15,17 @@ public:
 };
 
 // -----------------------------------------------------------------------------
+// Signals can be used by a thread when they need to be notified of a change
+// by another thread
+// -----------------------------------------------------------------------------
+class Signal
+{
+public:
+  virtual void Wait() = 0;
+  virtual void Notify() = 0;
+};
+
+// -----------------------------------------------------------------------------
 // This class keeps track of all the threads in the engine
 // The workload is divided between multiple threads:
 //  - [main]: the thread spawned by the OS and the rendering context is
@@ -30,12 +41,12 @@ public:
 class ThreadMngr
 {
 public:
-  virtual void Init() = 0;
-  virtual void Destroy() = 0;
-  virtual void Spawn(Thread* thread) = 0;
-  virtual void Start() = 0;
-  virtual void Stop() = 0;
-  virtual bool IsRunning() = 0;
+  virtual void    Init() = 0;
+  virtual void    Destroy() = 0;
+  virtual void    Spawn(Thread* thread) = 0;
+  virtual Signal *CreateSignal() = 0;
+  virtual void    Start() = 0;
+  virtual void    Stop() = 0;
 };
 
 // -----------------------------------------------------------------------------

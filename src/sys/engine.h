@@ -15,6 +15,7 @@ public:
   virtual void        Destroy()  = 0;
   virtual uint64_t    GetTime()  = 0;
   virtual void        Quit() { running = false; }
+  bool                IsRunning() { return running; }
 
   static CVar       wndWidth;
   static CVar       wndHeight;

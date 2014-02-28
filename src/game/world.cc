@@ -109,8 +109,9 @@ void WorldImpl::Run()
   float delta = 0.0f;
 
   lastFrame = thisFrame = engine->GetTime();
-  while (threadMngr->IsRunning())
+  while (engine->IsRunning())
   {
+    // Process input from renderer
     while (!queue.Empty())
     {
       switch ((event = queue.Pop()).type)
@@ -133,7 +134,7 @@ void WorldImpl::Run()
       }
     }
 
-    // Send data to renderer
+    // Get a new buffer
     buffer = renderer->SwapBuffers();
     buffer->camProj = camera.GetProj();
     buffer->camView = camera.GetView();

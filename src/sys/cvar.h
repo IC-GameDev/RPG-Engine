@@ -59,7 +59,7 @@ private:
   float              min;
   float              max;
 
-  bool               valueBool;
+  volatile bool      valueBool;
   int                valueInt;
   float              valueFloat;
   std::string        valueString;

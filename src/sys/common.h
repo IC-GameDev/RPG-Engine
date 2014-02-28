@@ -26,8 +26,8 @@
 # include <glm/glm.hpp>
 # include <glm/ext.hpp>
 // Our headers
-# include "core/concurrent.h"
 # include "core/exception.h"
+# include "core/concurrent.h"
 # include "core/hashmap.h"
 # include "core/quadtree.h"
 # include "core/queue.h"
@@ -60,6 +60,7 @@
 #   include <GL/glx.h>
 #   include <unistd.h>
 #   include <pthread.h>
+#   include <signal.h>
 #   include <errno.h>
 # elif defined(R_MAC)
 # else

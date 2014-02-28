@@ -4,17 +4,33 @@
 #include "sys/common.h"
 
 // -----------------------------------------------------------------------------
+class SignalImpl : public Signal
+{
+public:
+         SignalImpl();
+        ~SignalImpl();
+  void   Notify();
+  void   Wait();
+
+private:
+  pthread_mutex_t mutex;
+  pthread_cond_t  cond;
+  unsigned long   count;
+};
+
+// -----------------------------------------------------------------------------
 // This class keeps track of all the threads in the engine
 // -----------------------------------------------------------------------------
 class ThreadMngrImpl : public ThreadMngr
 {
 public:
-  void Init();
-  void Destroy();
-  void Spawn(Thread* thread);
-  void Start();
-  void Stop();
-  bool IsRunning();
+  void    Init();
+  void    Destroy();
+  void    Spawn(Thread* thread);
+  Signal *CreateSignal();
+  void    DestroySignal(Signal *signal);
+  void    Start();
+  void    Stop();
 
 private:
   struct ThreadImpl
@@ -23,9 +39,8 @@ private:
     Thread    *thread;
   };
 
+  std::set<Signal*>       signals;
   std::vector<ThreadImpl> pool;
-  volatile bool running;
-  pthread_attr_t attr;
 
   friend void* ThreadStarter(void *data);
 };
@@ -33,6 +48,43 @@ private:
 // -----------------------------------------------------------------------------
 static ThreadMngrImpl threadMngrImpl;
 ThreadMngr *threadMngr = &threadMngrImpl;
+
+// -----------------------------------------------------------------------------
+SignalImpl::SignalImpl()
+  : count(1)
+{
+  pthread_mutex_init(&mutex, NULL);
+  pthread_cond_init(&cond, NULL);
+}
+
+// -----------------------------------------------------------------------------
+SignalImpl::~SignalImpl()
+{
+  pthread_mutex_destroy(&mutex);
+  pthread_cond_destroy(&cond);
+  threadMngrImpl.DestroySignal(this);
+}
+
+// -----------------------------------------------------------------------------
+void SignalImpl::Notify()
+{
+  pthread_mutex_lock(&mutex);
+  ++count;
+  pthread_cond_signal(&cond);
+  pthread_mutex_unlock(&mutex);
+}
+
+// -----------------------------------------------------------------------------
+void SignalImpl::Wait()
+{
+  while (!count)
+  {
+    pthread_cond_wait(&cond, &mutex);
+  }
+
+  --count;
+  pthread_mutex_unlock(&mutex);
+}
 
 // -----------------------------------------------------------------------------
 void* ThreadStarter(void *data)
@@ -84,7 +136,6 @@ void ThreadMngrImpl::Spawn(Thread* thread)
 // -----------------------------------------------------------------------------
 void ThreadMngrImpl::Start()
 {
-  running = true;
   for (size_t i = 0; i < pool.size(); ++i)
   {
     if (pthread_create(&pool[i].handle, NULL, ThreadStarter, &pool[i]))
@@ -97,11 +148,16 @@ void ThreadMngrImpl::Start()
 // -----------------------------------------------------------------------------
 void ThreadMngrImpl::Stop()
 {
+  std::set<Signal*>::iterator it;
   struct timespec ts;
   ts.tv_sec = 2;
   ts.tv_nsec = 0;
 
-  running = false;
+  for (it = signals.begin(); it != signals.end(); ++it)
+  {
+    (*it)->Notify();
+  }
+
   if (clock_gettime(CLOCK_REALTIME, &ts))
   {
     for (size_t i = 0; i < pool.size(); ++i)
@@ -119,13 +175,24 @@ void ThreadMngrImpl::Stop()
       {
         std::cerr << "Timeout [" << pool[i].thread->GetThreadName()
                   << "]" << std::endl;
+        pthread_cancel(pool[i].handle);
       }
     }
   }
 }
 
 // -----------------------------------------------------------------------------
-bool ThreadMngrImpl::IsRunning()
+Signal *ThreadMngrImpl::CreateSignal()
 {
-  return running;
+  return *signals.insert(new SignalImpl()).first;
+}
+
+// -----------------------------------------------------------------------------
+void ThreadMngrImpl::DestroySignal(Signal *signal)
+{
+  std::set<Signal*>::iterator iter;
+  if ((iter = signals.find(signal)) != signals.end())
+  {
+    signals.erase(iter);
+  }
 }

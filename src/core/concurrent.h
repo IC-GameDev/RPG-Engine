@@ -9,14 +9,29 @@
 # define BranchPredict(a, b)        __builtin_expect(a, b)
 # define AtomicIncrement(ptr)       __sync_fetch_and_add(ptr, 1)
 
+// -----------------------------------------------------------------------------
 class Mutex
 {
 public:
-  Mutex() { pthread_mutex_init(&mutex, NULL); }
-  ~Mutex() { pthread_mutex_destroy(&mutex); }
+  Mutex()
+  {
+    pthread_mutex_init(&mutex, NULL);
+  }
 
-  void Lock() { pthread_mutex_lock(&mutex); }
-  void Unlock() { pthread_mutex_unlock(&mutex); }
+  ~Mutex()
+  {
+    pthread_mutex_destroy(&mutex);
+  }
+
+  void Lock()
+  {
+    pthread_mutex_lock(&mutex);
+  }
+
+  void Unlock()
+  {
+    pthread_mutex_unlock(&mutex);
+  }
 
 private:
   pthread_mutex_t mutex;
