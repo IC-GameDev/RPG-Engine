@@ -29,36 +29,24 @@ foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_INSTALL_PREFIX})
 endforeach()
 
+# Dependency directories for Win32
+set(GLEW_ROOT_DIR "${DEPENDENCIES_DIR}/glew")
+set(GLM_ROOT_DIR "${DEPENDENCIES_DIR}/glm")
+set(LUA_DIR "${DEPENDENCIES_DIR}/lua")
+set(RAPIDJSON_ROOT_DIR "${DEPENDENCIES_DIR}/rapidjson")
+
 # Dependencies
 include_directories(${CMAKE_SOURCE_DIR}/src)
 set(DEPENDENCIES_DIR "./dependencies/" CACHE STRING "Directory to an extracted dependencies package")
-
-# OpenGL
+set(GLEW_USE_STATIC_LIBS ON)
 find_package(OpenGL REQUIRED)
-if (WIN32)
-    # GLEW
-    set(GLEW_USE_STATIC_LIBS ON)
-    set(GLEW_ROOT_DIR "${DEPENDENCIES_DIR}/glew")
-    find_package(GLEW REQUIRED)
-    add_definitions(${GLEW_DEFINITIONS})
-
-    # GLM
-    set(GLM_ROOT_DIR "${DEPENDENCIES_DIR}/glm")
-    find_package(GLM REQUIRED)
-
-    # Lua
-    set(LUA_DIR "${DEPENDENCIES_DIR}/lua")
-    find_package(Lua REQUIRED)
-
-    # RapidJSON
-    set(RAPIDJSON_ROOT_DIR "${DEPENDENCIES_DIR}/rapidjson")
-    find_package(rapidjson REQUIRED)
-
-    set(INCLUDES ${GLEW_INCLUDE_DIR} ${GLM_INCLUDE_DIR} ${LUA_INCLUDE_DIR} ${RAPIDJSON_INCLUDE_DIR})
-    set(LIBS ${GLEW_LIBRARIES} ${LUA_LIBRARIES})
-endif()
-set(INCLUDES ${INCLUDES} ${OPENGL_INCLUDE_DIR})
-set(LIBS ${LIBS} ${OPENGL_LIBRARIES})
+find_package(GLEW REQUIRED)
+find_package(GLM REQUIRED)
+find_package(Lua REQUIRED)
+find_package(RapidJSON REQUIRED)
+set(INCLUDES ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${GLM_INCLUDE_DIR} ${LUA_INCLUDE_DIR} ${RAPIDJSON_INCLUDE_DIR})
+set(LIBS ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${LUA_LIBRARIES})
+add_definitions(${GLEW_DEFINITIONS})
 
 # Game logic & entity system
 file(GLOB GAME_SOURCES "src/game/*.cc")
@@ -103,7 +91,7 @@ else()
     FILE(GLOB SYS_PLATFORM_SOURCES "src/sys/linux/*.cc")
     FILE(GLOB SYS_PLATFORM_HEADERS "src/sys/linux/*.h")
     add_definitions(-DR_LINUX)
-    set(LIBS GL X11 GLEW lua Xxf86vm pthread)
+    set(LIBS ${LIBS} X11 Xxf86vm pthread)
     set(FLAGS)
 endif()
 file(GLOB SYS_SOURCES "src/sys/*.cc")
