@@ -1,0 +1,13 @@
+SESSION 3 : 26/02/2014
+
+-----
+More was discussed on the combat type:
+- Double blind system : al the time the player want to decide his action.
+- Player's and enemy's actions are executed "simultaneously": each is given a (potentially unknown) speed and then implemented from fastest to slowest.
+- With this system, the player cannot move and attack in the same turn (except maybe charge).
+
+Ideally, the player will be able to have modifiable robots/aliens that will be present on the battlefield (whether they act independently or take orders is still up to discussion)
+
+
+-----
+Skill bars idea confirmed. Base stats are still to be discussed.

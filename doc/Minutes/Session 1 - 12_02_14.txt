@@ -1,0 +1,14 @@
+SESSION 1 : 12/02/2014
+
+
+-----
+General Discussion:
+- According to a previously made poll, we have decided to make a 2D isometric, self-generating (procedural) RPG.
+
+- Nandor has previous experience with isometric game engines and will be contributing a lot to this one.
+
+- The language used will be C++. Script elements will be written in Lua.
+
+- For next session, we should try to identify the elements the game engine should implement so that we can commence coding and scripting. 
+	In parallel, we should also decide on what genre this RPG should be (fantastic, futurist, medieval, etc) and what gameplay elements we want.
+	Sound and art should not be necessary for the moment apart from basic tiles for testing.

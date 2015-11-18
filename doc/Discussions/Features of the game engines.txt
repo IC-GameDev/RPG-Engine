@@ -1,0 +1,8 @@
+FEATURES OF THE GAME ENGINE:
+
+-----
+I'm not sure this is the best way to maintain a discussion, but I fear that anything on Facebook could get lost and forgotten really easily. Any contributions made don't have to follow and particular syntax but please try to keep everything clear so that we can access the information easily.
+
+Concerning the features of the game engine I leave the propositions to Nandor and David who have more experience in this than me.
+
+-Cyprien - 12/02/14 - 23:50

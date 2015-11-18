@@ -1,0 +1,34 @@
+SESSION 5 : 12/03/14
+
+-----
+More brainstorming:
+
+---Combat :
+--Basic combat to be implemented first:
+ - Keep the double-blind.
+ - Combat round : input -> resolve (action by action) -> animate.
+ - In combat have 4 basic actions : move, charge, melee, defend (in increasing initiative).
+ - Simple AI : move towards the players tries to hit - defend when low on health / move away.
+ - Move : move value & 1 square / mvpt. Point & click system with transparent display of range).
+
+--Ideas for future development:
+ - "Bonus squares" invisible but still active until some skill is learned/mastered.
+   - Physical manifestation when accidentally activated -> constatnt when skill obtained.
+
+---Overworld :
+--General
+ - Central traveling hub.
+ - Variate enemy difficulty based on different criteria:
+   - Presence of civilisation.
+   - Presence of massive monster.
+   - Environmental hazards.
+   - Special buildings / places.
+ - Scale??????
+
+---Generation:
+--Planets:
+ - Make planets belong to different categories (allow crossovers). Give each category specific fauna and flora and have the planet randomly select from different categories to create unique environments.
+
+--General map:
+ - Really vague regions that are generated themselves as the player enters them.
+ - Potentially have 4-6 fixed species whose empires span the world according to a random balance.

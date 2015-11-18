@@ -1,0 +1,5 @@
+SESSION 4 : 05/03/14
+
+-----
+- The game engine now produces a level one can naviguate the camera in.
+- Nothing more really happened...

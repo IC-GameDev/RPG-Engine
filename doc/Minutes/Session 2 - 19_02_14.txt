@@ -1,0 +1,19 @@
+﻿SESSION 2 : 19/02/2014
+
+-----
+General Discussion:
+- THEME: Space / High-tech setting.
+- Both high-tech weapons and psychic powers
+- Have multiple skill bars, so the character can develop in all of them as he chooses.
+- Mainly keyboard control
+
+
+-----
+Combat Type:
+ ø The enemies are visible on the world map.
+ ø When combat is engaged, a small area of the map (10x10 or circle) becomes an "arena" in which the combat takes place.
+ ø During combat, the games pauses on the player's turn but the enemy acts almost immediately after, giving a small effect of real-time even though it actually is turn-based.
+ ø Actual possible actions during combat are to be decided.
+
+
+
